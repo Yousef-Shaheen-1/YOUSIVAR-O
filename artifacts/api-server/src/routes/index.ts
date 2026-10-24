@@ -5,10 +5,12 @@ import integrationsRouter from "./integrations";
 import usersRouter from "./users";
 import mediaRouter from "./media";
 import storageRouter from "./storage";
+import ownerAuthRouter from "./ownerAuth";
 
 const router: IRouter = Router();
 
 router.use(healthRouter);
+router.use(ownerAuthRouter);
 router.use(contentRouter);
 router.use(integrationsRouter);
 router.use(usersRouter);

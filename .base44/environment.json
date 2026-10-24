@@ -20,7 +20,47 @@
     },
     {
       "name": "OWNER_EMAIL",
-      "description": "Verified primary email of the owner's Clerk account; only this account receives the OWNER role. No owner access exists until it is set.",
+      "description": "Verified primary email of the owner's Clerk account; only this account receives the OWNER role. Also the only address authorized to start the Ω owner access flow. No owner access exists until it is set.",
+      "requiredAtBoot": false
+    },
+    {
+      "name": "OWNER_USERNAME",
+      "description": "Username of the registered owner account for the Ω owner access flow. Checked server-side together with the password; without it the flow reports that owner credentials are not configured.",
+      "requiredAtBoot": false
+    },
+    {
+      "name": "OWNER_PASSWORD",
+      "description": "Password of the registered owner account for the Ω owner access flow. Never sent to or stored in the browser, and never logged. OWNER_PASSWORD_HASH (a scrypt hash) may be provided instead.",
+      "requiredAtBoot": false
+    },
+    {
+      "name": "SMTP_HOST",
+      "description": "Optional: SMTP server used to deliver owner verification codes (for example smtp.gmail.com with an app password). Without a mail provider, or RESEND_API_KEY, the app reports that no code was sent instead of pretending one was.",
+      "requiredAtBoot": false
+    },
+    {
+      "name": "SMTP_PORT",
+      "description": "Optional: SMTP port for verification code delivery (465 for implicit TLS, 587 for STARTTLS). Defaults to 587.",
+      "requiredAtBoot": false
+    },
+    {
+      "name": "SMTP_USER",
+      "description": "Optional: SMTP username (usually the sending mailbox address).",
+      "requiredAtBoot": false
+    },
+    {
+      "name": "SMTP_PASSWORD",
+      "description": "Optional: SMTP password or provider-issued app password used only to deliver owner verification codes.",
+      "requiredAtBoot": false
+    },
+    {
+      "name": "MAIL_FROM",
+      "description": "Optional: sender shown on owner verification emails, for example 'YOUSIVAR-OMEGA <no-reply@yourdomain>'. Defaults to the SMTP user.",
+      "requiredAtBoot": false
+    },
+    {
+      "name": "RESEND_API_KEY",
+      "description": "Optional alternative to SMTP for owner verification code delivery: a Resend API key from resend.com.",
       "requiredAtBoot": false
     }
   ]

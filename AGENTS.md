@@ -67,6 +67,44 @@ docker compose -f docker-compose.base44.yml up -d
 - `scripts/post-merge.sh` filters a package named `db`; the real name is
   `@workspace/db`.
 
+## Owner access (the Ω flow)
+
+Clicking the Ω mark in the public header opens the owner sign-in modal
+(`src/components/owner-auth-modal.tsx`). Every step is decided by the API in
+`artifacts/api-server/src/routes/ownerAuth.ts` — the browser is never the
+authority:
+
+| endpoint                        | what it does                                                        |
+| ------------------------------- | ------------------------------------------------------------------- |
+| `GET /api/owner/readiness`      | reports which pieces of owner access are configured                  |
+| `POST /api/owner/session/start` | compares the submitted email with `OWNER_EMAIL`, opens a challenge   |
+| `POST /api/owner/session/code`  | checks `OWNER_USERNAME` + password, then mails a one-time code       |
+| `POST /api/owner/session/verify`| checks the code and issues an HttpOnly owner session cookie          |
+| `GET /api/owner/session`        | the current owner session (authenticated true/false)                 |
+| `POST /api/owner/session/logout`| revokes the session and clears the cookie                            |
+
+- Requires `OWNER_USERNAME` + `OWNER_PASSWORD` (or `OWNER_PASSWORD_HASH`, a
+  scrypt hash) **and** a mail provider: `RESEND_API_KEY`, or SMTP
+  (`SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, optional
+  `MAIL_FROM`). Without them the flow stops with a specific message instead of
+  pretending a code was sent; `/api/owner/readiness` tells the UI which piece is
+  missing, and the modal shows it as a "configuration required" banner.
+- Codes are 6 digits, scrypt-hashed, single-use, expiring and throttled
+  (`OWNER_OTP_TTL_SECONDS` 600 s, `OWNER_OTP_MAX_ATTEMPTS` 5,
+  `OWNER_OTP_RESEND_COOLDOWN_SECONDS` 45 s, `OWNER_OTP_MAX_SENDS` 5,
+  `OWNER_CHALLENGE_TTL_SECONDS` 900 s, `OWNER_SESSION_SECONDS` 43200 s).
+  Challenges live in `yousivar_owner_challenges`, sessions in
+  `yousivar_owner_sessions` (only a SHA-256 hash of the token is stored); the
+  `db-push` service creates both tables, so they appear on the next `up`.
+- `requirePermission` resolves the owner session **before** Clerk, so an owner
+  session reaches the whole `/api/admin/*` surface as the OWNER role.
+- **Cookie policy:** `OWNER_COOKIE_SAMESITE` / `OWNER_COOKIE_SECURE` override the
+  defaults. Under `BASE44_PREVIEW_MODE=1` the session cookie is
+  `SameSite=None; Secure`, because the preview iframe is a third-party context
+  where a `Lax` cookie is never sent; with the flag unset it is `SameSite=Lax`.
+- The Vite proxy sets `xfwd: true` (preview mode only) so the API can rate limit
+  per visitor instead of per proxy address.
+
 ## Verifying
 
 ```sh

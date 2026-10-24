@@ -90,6 +90,9 @@ export default defineConfig({
               // Keep the original Host header so the API's same-origin check
               // still sees the client-facing host it expects.
               changeOrigin: false,
+              // Forward the client address so the API can rate limit owner
+              // access attempts per visitor instead of per proxy.
+              xfwd: true,
               ws: true,
             },
           },

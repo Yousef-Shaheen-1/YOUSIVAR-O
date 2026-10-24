@@ -95,6 +95,50 @@ export const mediaAssets = pgTable("yousivar_media_assets", {
     .defaultNow(),
 });
 
+/**
+ * Owner access (the Ω flow). Challenges hold only a hashed one-time code, never
+ * the code itself, and are single-use: a challenge is consumed by the first
+ * successful verification and superseded when a new code is requested.
+ */
+export const ownerChallenges = pgTable("yousivar_owner_challenges", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  email: text("email").notNull(),
+  username: text("username"),
+  codeHash: text("code_hash"),
+  codeExpiresAt: timestamp("code_expires_at", { withTimezone: true }),
+  attempts: integer("attempts").notNull().default(0),
+  sends: integer("sends").notNull().default(0),
+  lastSentAt: timestamp("last_sent_at", { withTimezone: true }),
+  consumedAt: timestamp("consumed_at", { withTimezone: true }),
+  expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+});
+
+/**
+ * Owner sessions. Only a SHA-256 hash of the session token is stored, so a
+ * database read cannot be replayed as a session.
+ */
+export const ownerSessions = pgTable("yousivar_owner_sessions", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  tokenHash: text("token_hash").notNull().unique(),
+  email: text("email").notNull(),
+  username: text("username").notNull(),
+  userAgent: text("user_agent"),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+  lastSeenAt: timestamp("last_seen_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+  expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+  revokedAt: timestamp("revoked_at", { withTimezone: true }),
+});
+
+export type OwnerChallenge = typeof ownerChallenges.$inferSelect;
+export type OwnerSession = typeof ownerSessions.$inferSelect;
+
 export type ContentItem = typeof contentItems.$inferSelect;
 export type NewContentItem = typeof contentItems.$inferInsert;
 export type SiteRecord = typeof siteRecords.$inferSelect;

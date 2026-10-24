@@ -4,9 +4,9 @@ import { ClerkProvider, SignIn, SignUp, useClerk } from '@clerk/react';
 import { publishableKeyFromHost } from '@clerk/react/internal';
 import { shadcn } from '@clerk/themes';
 import {
-  Activity, ArrowDownRight, ArrowRight, ArrowUpRight, AudioLines,
+  Activity, ArrowDown, ArrowDownRight, ArrowRight, ArrowUp, ArrowUpRight, AudioLines,
   Bot, Check, Command, FilePlus2,
-  Fingerprint, Github, Globe2, Languages, LayoutDashboard, LoaderCircle,
+  Fingerprint, Github, Globe2, Languages, LayoutDashboard, LoaderCircle, LogOut,
   Menu, Plus, Search, Send, Settings2,
   ShieldCheck, Sparkles, TerminalSquare, Trash2, Users, X, Zap,
 } from 'lucide-react';
@@ -29,6 +29,8 @@ import type {
 } from '@workspace/api-client-react';
 import { Route, Switch, Link, useLocation, Router as WouterRouter } from 'wouter';
 import NotFound from '@/pages/not-found';
+import { OwnerAuthModal } from '@/components/owner-auth-modal';
+import { ownerAccess } from '@/lib/owner-session';
 
 const queryClient = new QueryClient({ defaultOptions: { queries: { retry: 1, staleTime: 15_000 } } });
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, '');
@@ -114,6 +116,9 @@ function Home() {
   const site = useGetPublicSite();
   const content = useListPublicContent({ limit: 60, offset: 0 });
   const { locale, setLocale } = useLocale();
+  const [, setLocation] = useLocation();
+  const qc = useQueryClient();
+  const [ownerOpen, setOwnerOpen] = useState(false);
   const rtl = locale === 'ar';
   const settings = site.data?.settings;
   const profile = site.data?.profile;
@@ -127,7 +132,10 @@ function Home() {
   const changeLocale = () => setLocale(rtl ? 'en' : 'ar');
   return <main className="grain min-h-[100dvh] bg-[#101214] text-[#e9e7e0]" dir={rtl ? 'rtl' : 'ltr'}>
     <header className="relative z-10 mx-auto flex max-w-[1440px] items-center justify-between px-5 py-6 sm:px-10">
-      <Link href="/" className="flex items-center gap-3 text-zinc-100" data-testid="link-home"><span className="grid h-9 w-9 place-items-center rounded-xl border border-white/15 bg-white/[.04] font-serif text-lg">Ω</span><span className="eyebrow hidden sm:block">YOUSIVAR–Ω</span></Link>
+      <div className="flex items-center gap-3 text-zinc-100">
+        <button type="button" onClick={()=>setOwnerOpen(true)} aria-label="Owner access" title="Owner access" className="focus-ring grid h-9 w-9 place-items-center rounded-xl border border-white/15 bg-white/[.04] font-serif text-lg transition hover:border-[#c7bfae]/50 hover:bg-white/10" data-testid="button-omega-owner">Ω</button>
+        <Link href="/" className="eyebrow hidden text-zinc-100 sm:block" data-testid="link-home">YOUSIVAR–Ω</Link>
+      </div>
       <nav className="flex items-center gap-3 sm:gap-7"><a href="#work" className="eyebrow text-zinc-400 transition hover:text-white">{rtl ? 'الأعمال' : 'Work'}</a><a href="#about" className="eyebrow text-zinc-400 transition hover:text-white">{rtl ? 'نبذة' : 'About'}</a>
         <button onClick={changeLocale} className="focus-ring inline-flex items-center gap-2 rounded-full border border-white/15 px-3 py-2 text-xs text-zinc-300 hover:bg-white/10" data-testid="button-locale"><Languages size={14}/>{rtl ? 'EN' : 'عربي'}</button>
         <Link href="/admin" className="eyebrow hidden text-zinc-500 transition hover:text-[#d8cfbb] md:block" data-testid="link-admin">Private console <ArrowUpRight className="ml-1 inline h-3 w-3"/></Link>
@@ -183,6 +191,7 @@ function Home() {
       <div className="mt-16 grid gap-px overflow-hidden rounded-2xl border border-white/10 bg-white/10 sm:grid-cols-3">{[['01','Independent by design','Private tools, public proof.'],['02','Built to evolve','Content and identity belong to their owner.'],['03','Made for the long run','A focused system, not another feed.']].map(([n,t,d])=><div key={n} className="bg-[#101214] p-7 sm:p-9"><span className="eyebrow text-[#bdb5a2]">{n}</span><h3 className="mt-8 text-lg text-zinc-200">{t}</h3><p className="mt-2 text-sm text-zinc-500">{d}</p></div>)}</div>
     </section>
     <footer className="border-t border-white/10 px-5 py-8 sm:px-10"><div className="mx-auto flex max-w-[1440px] flex-col justify-between gap-4 text-xs text-zinc-600 sm:flex-row"><span className="eyebrow">YOUSIVAR–Ω / PRIVATE BY NATURE</span><span>© {new Date().getFullYear()} · Built with clarity.</span></div></footer>
+    <OwnerAuthModal open={ownerOpen} onClose={()=>setOwnerOpen(false)} onAuthenticated={()=>{setOwnerOpen(false);qc.clear();setLocation('/admin');}}/>
   </main>;
 }
 
@@ -196,10 +205,18 @@ const navigation = [
   { href: '/admin/activity', label: 'Activity', icon: Activity },
 ];
 function AdminShell({ children }: { children: ReactNode }) {
-  const [path] = useLocation();
+  const [path, setLocation] = useLocation();
   const [open, setOpen] = useState(false);
   const { locale, setLocale } = useLocale();
+  const clerk = useClerk();
+  const qc = useQueryClient();
   const rtl = locale === 'ar';
+  const signOut = async () => {
+    try { await ownerAccess.logout(); } catch { /* the API clears the cookie regardless */ }
+    try { await clerk.signOut(); } catch { /* there may be no Clerk session to end */ }
+    qc.clear();
+    setLocation('/');
+  };
   return <div dir={rtl ? 'rtl' : 'ltr'} className="grain min-h-[100dvh] bg-[#101214] text-[#e9e7e0] md:grid md:grid-cols-[248px_1fr]">
     <aside className={`fixed inset-y-0 left-0 z-30 flex w-[260px] flex-col border-r border-white/10 bg-[#141618] px-5 py-6 transition-transform md:sticky md:top-0 md:h-[100dvh] md:translate-x-0 rtl:right-0 rtl:left-auto rtl:border-r-0 rtl:border-l ${open ? 'translate-x-0' : '-translate-x-full rtl:translate-x-full'}`}>
       <div className="flex items-center justify-between"><Link href="/" className="flex items-center gap-3" data-testid="link-console-home"><span className="grid h-9 w-9 place-items-center rounded-xl border border-white/15 bg-white/[.04] font-serif">Ω</span><span><span className="block text-sm tracking-wide">YOUSIVAR–Ω</span><span className="eyebrow block pt-1 text-[8px] text-zinc-600">CONTROL ROOM</span></span></Link><button className="md:hidden" onClick={()=>setOpen(false)} aria-label="Close menu"><X size={17}/></button></div>
@@ -208,15 +225,16 @@ function AdminShell({ children }: { children: ReactNode }) {
     </aside>
     {open&&<button className="fixed inset-0 z-20 bg-black/60 md:hidden" onClick={()=>setOpen(false)} aria-label="Close navigation overlay"/>}
     <div className="min-w-0">
-      <header className="sticky top-0 z-10 flex h-[68px] items-center justify-between border-b border-white/10 bg-[#101214]/90 px-4 backdrop-blur-xl sm:px-8"><div className="flex items-center gap-3"><button onClick={()=>setOpen(true)} className="rounded-lg p-2 text-zinc-400 hover:bg-white/10 md:hidden" aria-label="Open navigation"><Menu size={18}/></button><span className="eyebrow text-zinc-500">{rtl ? 'مركز القيادة الشخصي' : 'Personal command center'}</span></div><div className="flex items-center gap-4"><button onClick={()=>setLocale(rtl ? 'en' : 'ar')} className="eyebrow inline-flex items-center gap-2 text-zinc-500 hover:text-zinc-200" aria-label={rtl ? 'Switch to English' : 'Switch to Arabic'}><Languages size={14}/>{rtl ? 'EN' : 'عربي'}</button><Link href="/" className="eyebrow flex items-center gap-2 text-zinc-500 hover:text-zinc-200"><Globe2 size={14}/>{rtl ? 'الموقع العام' : 'Public view'}</Link></div></header>
+      <header className="sticky top-0 z-10 flex h-[68px] items-center justify-between border-b border-white/10 bg-[#101214]/90 px-4 backdrop-blur-xl sm:px-8"><div className="flex items-center gap-3"><button onClick={()=>setOpen(true)} className="rounded-lg p-2 text-zinc-400 hover:bg-white/10 md:hidden" aria-label="Open navigation"><Menu size={18}/></button><span className="eyebrow text-zinc-500">{rtl ? 'مركز القيادة الشخصي' : 'Personal command center'}</span></div><div className="flex items-center gap-4"><button onClick={()=>setLocale(rtl ? 'en' : 'ar')} className="eyebrow inline-flex items-center gap-2 text-zinc-500 hover:text-zinc-200" aria-label={rtl ? 'Switch to English' : 'Switch to Arabic'}><Languages size={14}/>{rtl ? 'EN' : 'عربي'}</button><Link href="/" className="eyebrow flex items-center gap-2 text-zinc-500 hover:text-zinc-200"><Globe2 size={14}/>{rtl ? 'الموقع العام' : 'Public view'}</Link><button type="button" onClick={signOut} className="eyebrow inline-flex items-center gap-2 text-zinc-500 transition hover:text-zinc-200" data-testid="button-sign-out"><LogOut size={14}/>{rtl ? 'خروج' : 'Sign out'}</button></div></header>
       <main className="mx-auto max-w-[1440px] px-4 pb-16 pt-8 sm:px-8 sm:pt-12">{children}</main>
     </div>
   </div>;
 }
 function AdminGate({ children, permission }: { children: ReactNode; permission?: string }) {
   const identity = useGetAdminIdentity({ query: { queryKey: getGetAdminIdentityQueryKey(), retry: false } });
+  const [ownerOpen, setOwnerOpen] = useState(false);
   if (identity.isLoading) return <PageLoader/>;
-  if (identity.isError || !identity.data) return <div className="grain grid min-h-[100dvh] place-items-center bg-[#101214] px-5 text-[#e9e7e0]"><div className="max-w-lg rounded-3xl border border-white/10 bg-white/[.035] p-8 text-center"><ShieldCheck className="mx-auto h-8 w-8 text-[#c7bfae]"/><p className="eyebrow mt-5 text-zinc-500">Permission required</p><h1 className="display mt-3 text-4xl">This workspace is private.</h1><p className="mt-3 text-sm leading-6 text-zinc-500">Sign in with an account granted application permissions. A Clerk session alone does not grant access.</p><Link href="/sign-in" className="mt-6 inline-flex rounded-full bg-[#c6beac] px-5 py-3 text-sm font-medium text-[#191a1b]" data-testid="link-sign-in">Continue to sign in</Link><div className="mt-5 text-xs text-zinc-600">{identity.error instanceof Error ? identity.error.message : 'Access was not granted by the API.'}</div></div></div>;
+  if (identity.isError || !identity.data) return <div className="grain grid min-h-[100dvh] place-items-center bg-[#101214] px-5 text-[#e9e7e0]"><div className="max-w-lg rounded-3xl border border-white/10 bg-white/[.035] p-8 text-center"><ShieldCheck className="mx-auto h-8 w-8 text-[#c7bfae]"/><p className="eyebrow mt-5 text-zinc-500">Permission required</p><h1 className="display mt-3 text-4xl">This workspace is private.</h1><p className="mt-3 text-sm leading-6 text-zinc-500">Owner access runs the Ω flow: authorized email, owner credentials, then a one-time code. A Clerk session alone does not grant access.</p><div className="mt-6 flex flex-wrap justify-center gap-2"><button type="button" onClick={()=>setOwnerOpen(true)} className="focus-ring inline-flex rounded-full bg-[#c6beac] px-5 py-3 text-sm font-medium text-[#191a1b]" data-testid="button-owner-access">Owner access (Ω)</button><Link href="/sign-in" className="inline-flex rounded-full border border-white/15 px-5 py-3 text-sm text-zinc-200" data-testid="link-sign-in">Continue to sign in</Link></div><div className="mt-5 text-xs text-zinc-600">{identity.error instanceof Error ? identity.error.message : 'Access was not granted by the API.'}</div></div><OwnerAuthModal open={ownerOpen} onClose={()=>setOwnerOpen(false)} onAuthenticated={()=>{setOwnerOpen(false);void identity.refetch();}}/></div>;
   if (!identity.data.permissions?.length) return <div className="grain grid min-h-[100dvh] place-items-center bg-[#101214] p-6 text-center text-zinc-400"><div><ShieldCheck className="mx-auto h-8 w-8"/><h1 className="display mt-4 text-4xl">No permissions assigned</h1><p className="mt-3 text-sm">Your authenticated identity does not currently have application permissions.</p></div></div>;
   if (permission && !identity.data.permissions.includes(permission)) return <div className="grain grid min-h-[100dvh] place-items-center bg-[#101214] p-6 text-center text-zinc-400"><div><ShieldCheck className="mx-auto h-8 w-8"/><p className="eyebrow mt-5 text-zinc-600">Permission boundary</p><h1 className="display mt-3 text-4xl">Access is not assigned.</h1><p className="mt-3 text-sm">This section requires <code className="text-zinc-300">{permission}</code>.</p><Link href="/admin" className="mt-6 inline-flex rounded-full border border-white/15 px-5 py-3 text-sm text-zinc-200">Return to overview</Link></div></div>;
   return <AdminShell>{children}</AdminShell>;
@@ -247,8 +265,10 @@ function ContentEditor({ item, onClose }: { item?: ContentItem; onClose: () => v
     category:item.category,title:item.title,titleAr:item.titleAr,description:item.description,descriptionAr:item.descriptionAr,url:item.url,
     tags:item.tags,actions:item.actions,media:item.media,status:item.status,featured:item.featured,sortOrder:item.sortOrder,metadata:item.metadata,
   } : { category:'',title:'',titleAr:'',description:'',descriptionAr:'',url:'',tags:[],actions:[],media:[],status:'draft',featured:false,sortOrder:0 });
-  const [tagText,setTagText]=useState((item?.tags??[]).join(', ')); const [saveError,setSaveError]=useState('');
+  const [tagText,setTagText]=useState((item?.tags??[]).join(', ')); const [saveError,setSaveError]=useState(''); const [preview,setPreview]=useState(false);
   const set=(key:keyof ContentItemInput,value:unknown)=>setForm(prev=>({...prev,[key]:value}));
+  const patchAction=(index:number,patch:Partial<NonNullable<ContentItemInput['actions']>[number]>)=>set('actions',(form.actions??[]).map((action,i)=>i===index?{...action,...patch}:action));
+  const moveAction=(index:number,direction:number)=>{const list=[...(form.actions??[])];const target=index+direction;if(target<0||target>=list.length)return;const [entry]=list.splice(index,1);if(!entry)return;list.splice(target,0,entry);set('actions',list);};
   const save=(e:FormEvent)=>{e.preventDefault();setSaveError('');const data={...form,tags:tagText.split(',').map(s=>s.trim()).filter(Boolean)};
     const onSuccess=()=>{qc.invalidateQueries({queryKey:getListAdminContentQueryKey()});qc.invalidateQueries({queryKey:getListPublicContentQueryKey()});qc.invalidateQueries({queryKey:getGetAdminSummaryQueryKey()});onClose();};
     if(item) update.mutate({id:item.id,data},{onSuccess,onError:err=>setSaveError(err.message)}); else create.mutate({data},{onSuccess,onError:err=>setSaveError(err.message)});
@@ -271,24 +291,79 @@ function ContentEditor({ item, onClose }: { item?: ContentItem; onClose: () => v
     <form onSubmit={save} className="max-h-[94dvh] w-full max-w-3xl overflow-y-auto rounded-[1.5rem] border border-white/15 bg-[#181a1c] p-5 shadow-2xl sm:p-8">
       <div className="mb-7 flex items-start justify-between"><div><p className="eyebrow text-[#c2baa8]">Content desk</p><h2 className="display mt-2 text-4xl">{item?'Edit entry':'New entry'}</h2></div><button type="button" onClick={onClose} aria-label="Close editor" className="rounded-full border border-white/10 p-2 text-zinc-500 hover:text-white"><X size={17}/></button></div>
       <div className="grid gap-4 sm:grid-cols-2"><Field label="Category" value={form.category} onChange={v=>set('category',v)} testId="input-content-category"/><Field label="Title · English" value={form.title} onChange={v=>set('title',v)} testId="input-content-title"/><Field label="Title · Arabic" value={form.titleAr||''} onChange={v=>set('titleAr',v)} testId="input-content-title-ar"/><Field label="Project URL" value={form.url||''} onChange={v=>set('url',v)} testId="input-content-url"/><div className="sm:col-span-2"><Field label="Description · English" value={form.description} onChange={v=>set('description',v)} multiline testId="input-content-description"/></div><div className="sm:col-span-2"><Field label="Description · Arabic" value={form.descriptionAr||''} onChange={v=>set('descriptionAr',v)} multiline testId="input-content-description-ar"/></div><div className="sm:col-span-2"><Field label="Tags · comma separated" value={tagText} onChange={setTagText} testId="input-content-tags"/></div>
-        <label className="space-y-2"><span className="eyebrow text-zinc-500">Publication state</span><select value={form.status||'draft'} onChange={e=>set('status',e.target.value)} className="w-full rounded-xl border border-white/10 bg-[#202224] px-4 py-3 text-sm text-zinc-200" data-testid="select-content-status"><option value="draft">Draft</option><option value="published">Published</option><option value="archived">Archived</option></select></label><label className="flex items-end gap-3 pb-3 text-sm text-zinc-300"><input type="checkbox" checked={!!form.featured} onChange={e=>set('featured',e.target.checked)} className="accent-[#c8c0ae]" data-testid="toggle-content-featured"/>Featured</label>
+        <label className="space-y-2"><span className="eyebrow text-zinc-500">Publication state</span><select value={form.status||'draft'} onChange={e=>set('status',e.target.value)} className="w-full rounded-xl border border-white/10 bg-[#202224] px-4 py-3 text-sm text-zinc-200" data-testid="select-content-status"><option value="draft">Draft</option><option value="published">Published</option><option value="archived">Archived</option></select></label><label className="flex items-end gap-3 pb-3 text-sm text-zinc-300"><input type="checkbox" checked={!!form.featured} onChange={e=>set('featured',e.target.checked)} className="accent-[#c8c0ae]" data-testid="toggle-content-featured"/>Featured</label><Field label="Display order" type="number" value={String(form.sortOrder??0)} onChange={v=>set('sortOrder',Number.parseInt(v,10)||0)} testId="input-content-order"/>
       </div>
       <div className="mt-5 rounded-xl border border-white/10 p-4"><div className="flex flex-wrap items-center justify-between gap-3"><span className="eyebrow text-zinc-500">Media assets</span><label className="cursor-pointer rounded-full border border-white/15 px-4 py-2 text-xs text-zinc-200 hover:bg-white/10">{requestUrl.isPending||complete.isPending?'Uploading…':'Choose file'}<input type="file" className="sr-only" accept="image/png,image/jpeg,image/webp,image/gif,image/svg+xml,video/mp4,video/webm,audio/mpeg,audio/ogg,audio/wav" onChange={e=>{const file=e.target.files?.[0];if(file)void upload(file);e.currentTarget.value='';}} disabled={requestUrl.isPending||complete.isPending} data-testid="input-content-media"/></label></div>
         <div className="mt-3 space-y-2">{form.media?.map((media,index)=><div key={`${media.url}-${index}`} className="flex items-center justify-between rounded-lg bg-white/[.04] px-3 py-2 text-xs text-zinc-400"><span className="truncate">{media.kind} · {media.alt||media.url}</span><button type="button" onClick={()=>set('media',form.media?.filter((_,i)=>i!==index))} className="text-zinc-600 hover:text-red-300" aria-label="Remove media"><X size={14}/></button></div>)}</div></div>
+      <div className="mt-5 rounded-xl border border-white/10 p-4"><div className="flex flex-wrap items-center justify-between gap-3"><span className="eyebrow text-zinc-500">Secondary actions</span><button type="button" onClick={()=>set('actions',[...(form.actions??[]),{label:'',labelAr:'',url:'',kind:'secondary'}])} className="inline-flex items-center gap-1 rounded-full border border-white/15 px-4 py-2 text-xs text-zinc-200 hover:bg-white/10" data-testid="button-add-action"><Plus size={13}/>Add action</button></div>
+        <p className="mt-3 text-[11px] leading-5 text-zinc-600">Every action becomes its own button on the public entry. Use an https:// link for external destinations or a /path for an internal page.</p>
+        {(form.actions?.length??0)===0&&<p className="mt-3 text-xs text-zinc-600">No secondary actions yet.</p>}
+        <div className="mt-3 space-y-3">{form.actions?.map((action,index)=><div key={index} className="rounded-lg border border-white/10 bg-white/[.03] p-3" data-testid={`action-row-${index}`}>
+          <div className="grid gap-2 sm:grid-cols-2">
+            <input value={action.label} onChange={e=>patchAction(index,{label:e.target.value})} placeholder="Label · English" aria-label={`Action ${index+1} label`} className="w-full rounded-lg border border-white/10 bg-black/20 px-3 py-2 text-sm text-zinc-200 outline-none focus:border-[#c7bfae]/50" data-testid={`input-action-label-${index}`}/>
+            <input value={action.labelAr??''} onChange={e=>patchAction(index,{labelAr:e.target.value})} placeholder="Label · Arabic" aria-label={`Action ${index+1} Arabic label`} className="w-full rounded-lg border border-white/10 bg-black/20 px-3 py-2 text-sm text-zinc-200 outline-none focus:border-[#c7bfae]/50" data-testid={`input-action-label-ar-${index}`}/>
+            <input value={action.url} onChange={e=>patchAction(index,{url:e.target.value})} placeholder="/internal-page or https://example.com" aria-label={`Action ${index+1} destination`} className="w-full rounded-lg border border-white/10 bg-black/20 px-3 py-2 text-sm text-zinc-200 outline-none focus:border-[#c7bfae]/50" data-testid={`input-action-url-${index}`}/>
+            <select value={action.kind??'secondary'} onChange={e=>patchAction(index,{kind:e.target.value as never})} aria-label={`Action ${index+1} emphasis`} className="w-full rounded-lg border border-white/10 bg-[#202224] px-3 py-2 text-sm text-zinc-200" data-testid={`select-action-kind-${index}`}><option value="secondary">Secondary</option><option value="primary">Primary</option></select>
+          </div>
+          <div className="mt-2 flex items-center justify-end gap-1">
+            <button type="button" onClick={()=>moveAction(index,-1)} disabled={index===0} aria-label={`Move action ${index+1} up`} className="rounded-full p-2 text-zinc-500 hover:bg-white/10 disabled:opacity-30" data-testid={`button-action-up-${index}`}><ArrowUp size={14}/></button>
+            <button type="button" onClick={()=>moveAction(index,1)} disabled={index===(form.actions?.length??0)-1} aria-label={`Move action ${index+1} down`} className="rounded-full p-2 text-zinc-500 hover:bg-white/10 disabled:opacity-30" data-testid={`button-action-down-${index}`}><ArrowDown size={14}/></button>
+            <button type="button" onClick={()=>set('actions',form.actions?.filter((_,i)=>i!==index))} aria-label={`Remove action ${index+1}`} className="rounded-full p-2 text-zinc-600 hover:bg-red-400/10 hover:text-red-300" data-testid={`button-action-remove-${index}`}><Trash2 size={14}/></button>
+          </div>
+        </div>)}</div>
+      </div>
       {saveError&&<p className="mt-4 text-sm text-red-300" role="alert">{saveError}</p>}
-      <div className="mt-7 flex flex-wrap items-center justify-between gap-3"><Saved pending={pending} text="Ready to save"/><div className="flex gap-2"><Button secondary onClick={onClose}>Cancel</Button><Button type="submit" disabled={pending} testId="button-save-content">{pending?'Saving…':item?'Save changes':'Create entry'}</Button></div></div>
+      <div className="mt-7 flex flex-wrap items-center justify-between gap-3"><Saved pending={pending} text="Ready to save"/><div className="flex gap-2"><Button secondary onClick={()=>setPreview(true)} testId="button-preview-content">Preview</Button><Button secondary onClick={onClose}>Cancel</Button><Button type="submit" disabled={pending} testId="button-save-content">{pending?'Saving…':item?'Save changes':'Create entry'}</Button></div></div>
     </form>
+    {preview&&<div className="fixed inset-0 z-[60] grid place-items-center overflow-y-auto bg-black/80 p-3 backdrop-blur-sm" role="dialog" aria-modal="true" aria-label="Content preview">
+      <div className="my-6 w-full max-w-2xl overflow-hidden rounded-[1.5rem] border border-white/12 bg-[#15171a] p-6 sm:p-8">
+        <div className="flex items-start justify-between gap-4"><div><p className="eyebrow text-[#c2baa8]">{form.category||'Uncategorised'} · {form.status||'draft'}</p><h3 className="display mt-2 text-4xl">{form.title||'Untitled entry'}</h3></div><button type="button" onClick={()=>setPreview(false)} aria-label="Close preview" className="rounded-full border border-white/10 p-2 text-zinc-500 hover:text-white" data-testid="button-close-preview"><X size={16}/></button></div>
+        <p className="mt-4 whitespace-pre-line text-sm leading-7 text-zinc-400">{form.description||'No description yet.'}</p>
+        {(form.media?.length??0)>0&&<div className="mt-5 grid gap-3 sm:grid-cols-2">{form.media?.map((media,index)=><div key={`${media.url}-${index}`} className="overflow-hidden rounded-xl border border-white/10 bg-black/20">{media.kind==='video'?<video src={media.url} controls preload="metadata" className="w-full"/>:media.kind==='audio'?<audio src={media.url} controls preload="metadata" className="w-full p-3"/>:<img src={media.url} alt={media.alt||form.title} loading="lazy" className="max-h-72 w-full object-cover"/>}</div>)}</div>}
+        {(form.actions?.length??0)>0&&<div className="mt-6 flex flex-wrap gap-2">{form.actions?.map((action,index)=><span key={index} className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-xs ${action.kind==='primary'?'bg-[#c6beac] text-[#191a1b]':'border border-white/15 text-zinc-200'}`}>{action.label||'Untitled action'}</span>)}</div>}
+        <p className="mt-6 text-[11px] text-zinc-600">This is how the entry appears once published. Nothing is stored until you save.</p>
+      </div>
+    </div>}
   </div>;
 }
+/** Where the moved entry should sit between its new neighbours, or null when the list needs renumbering. */
+function nextSortOrder(reordered: ContentItem[], target: number): number | null {
+  const before=reordered[target-1]?.sortOrder; const after=reordered[target+1]?.sortOrder;
+  if(typeof before==='number'&&typeof after==='number') return after-before>1?Math.floor((before+after)/2):null;
+  if(typeof before==='number') return before+10;
+  if(typeof after==='number') return after-10;
+  return null;
+}
+
 function ContentPage() {
   const qc=useQueryClient(); const [search,setSearch]=useState('');const [status,setStatus]=useState('');const [editor,setEditor]=useState<ContentItem|true|false>(false);const [confirm,setConfirm]=useState<ContentItem|null>(null);const [notice,setNotice]=useState('');
   const params=useMemo(()=>({search:search||undefined,status:status?status as 'draft'|'published'|'archived':undefined,limit:100,offset:0}),[search,status]);
   const query=useListAdminContent(params,{query:{queryKey:getListAdminContentQueryKey(params)}});
-  const del=useDeleteContentItem();const publish=useSetContentItemPublished();const refresh=()=>{qc.invalidateQueries({queryKey:getListAdminContentQueryKey()});qc.invalidateQueries({queryKey:getListPublicContentQueryKey()});qc.invalidateQueries({queryKey:getGetAdminSummaryQueryKey()});};
+  const del=useDeleteContentItem();const publish=useSetContentItemPublished();const update=useUpdateContentItem();const create=useCreateContentItem();
+  const refresh=()=>{qc.invalidateQueries({queryKey:getListAdminContentQueryKey()});qc.invalidateQueries({queryKey:getListPublicContentQueryKey()});qc.invalidateQueries({queryKey:getGetAdminSummaryQueryKey()});};
+  const moveItem=async(index:number,direction:number)=>{
+    const items=query.data??[];const target=index+direction;
+    if(target<0||target>=items.length)return;
+    const moved=items[index];if(!moved)return;
+    const reordered=[...items];reordered.splice(index,1);reordered.splice(target,0,moved);
+    setNotice('');
+    try {
+      // A single write when the neighbours leave room; a one-off renumber otherwise.
+      const order=nextSortOrder(reordered,target);
+      if(order!==null){await update.mutateAsync({id:moved.id,data:{sortOrder:order}});}
+      else {for(const [position,item] of reordered.entries()){const order=(position+1)*10;if(item.sortOrder!==order)await update.mutateAsync({id:item.id,data:{sortOrder:order}});}}
+      refresh();
+    } catch(error){setNotice(error instanceof Error?error.message:'The new order could not be saved.');}
+  };
+  const duplicate=async(item:ContentItem)=>{
+    setNotice('');
+    try{await create.mutateAsync({data:{category:item.category,title:`${item.title} (copy)`,titleAr:item.titleAr,description:item.description,descriptionAr:item.descriptionAr,url:item.url,tags:item.tags,actions:item.actions,media:item.media,status:'draft',featured:false,sortOrder:item.sortOrder}});refresh();}
+    catch(error){setNotice(error instanceof Error?error.message:'The entry could not be duplicated.');}
+  };
   return <><Heading label="Publishing" title="Content" detail="Manage published work and drafts. Every change is stored on the server." action={<Button onClick={()=>setEditor(true)} testId="button-add-content"><Plus size={16}/>New entry</Button>}/>
     <div className="mb-5 flex flex-col gap-3 sm:flex-row"><label className="relative flex-1"><Search className="absolute left-4 top-3.5 h-4 w-4 text-zinc-600"/><input value={search} onChange={e=>setSearch(e.target.value)} className="w-full rounded-full border border-white/10 bg-white/[.035] py-3 pl-11 pr-4 text-sm outline-none focus:border-white/25" placeholder="Search entries" data-testid="input-content-search"/></label><select value={status} onChange={e=>setStatus(e.target.value)} className="rounded-full border border-white/10 bg-[#1a1c1e] px-5 py-3 text-sm text-zinc-300" data-testid="select-content-filter"><option value="">All states</option><option value="published">Published</option><option value="draft">Drafts</option><option value="archived">Archived</option></select></div>
     {query.isLoading?<PageLoader/>:query.isError?<QueryError retry={()=>query.refetch()}/>:!query.data?.length?<div className="rounded-2xl border border-dashed border-white/15 py-20 text-center"><FilePlus2 className="mx-auto h-8 w-8 text-zinc-600"/><p className="mt-4 text-sm text-zinc-400">{search||status?'No entries match these filters.':'Your content library is empty.'}</p>{!search&&!status&&<button onClick={()=>setEditor(true)} className="mt-4 text-xs text-[#c9c0ad] hover:text-white">Create your first entry</button>}</div>:<div className="overflow-hidden rounded-2xl border border-white/10"><div className="hidden grid-cols-[1.5fr_.7fr_.65fr_.6fr_auto] gap-4 bg-white/[.035] px-5 py-3 sm:grid"><span className="eyebrow text-zinc-600">Entry</span><span className="eyebrow text-zinc-600">Category</span><span className="eyebrow text-zinc-600">Status</span><span className="eyebrow text-zinc-600">Updated</span><span/></div>
-      <div className="divide-y divide-white/[.07]">{query.data.map(item=><div key={item.id} data-testid={`row-content-${item.id}`} className="grid gap-3 px-4 py-4 sm:grid-cols-[1.5fr_.7fr_.65fr_.6fr_auto] sm:items-center sm:gap-4 sm:px-5"><div className="min-w-0"><p className="truncate text-sm text-zinc-200">{item.title}</p><p className="mt-1 truncate text-xs text-zinc-600">{item.titleAr||item.description}</p></div><span className="text-xs text-zinc-500">{item.category}</span><span className={`w-fit rounded-full px-3 py-1 text-[10px] ${item.status==='published'?'bg-emerald-300/10 text-emerald-200':item.status==='archived'?'bg-zinc-400/10 text-zinc-400':'bg-amber-200/10 text-amber-100'}`}>{item.status}</span><span className="text-xs text-zinc-600">{new Date(item.updatedAt).toLocaleDateString()}</span><div className="flex items-center gap-2"><button onClick={()=>{setNotice('');setEditor(item);}} className="rounded-full border border-white/10 px-3 py-2 text-xs text-zinc-300 hover:bg-white/10" data-testid={`button-edit-${item.id}`}>Edit</button><button disabled={publish.isPending} onClick={()=>publish.mutate({id:item.id,data:{published:item.status!=='published'}},{onSuccess:refresh,onError:e=>setNotice(e.message)})} className="rounded-full border border-white/10 px-3 py-2 text-xs text-zinc-400 hover:text-white" data-testid={`button-publish-${item.id}`}>{item.status==='published'?'Unpublish':'Publish'}</button><button onClick={()=>setConfirm(item)} aria-label={`Delete ${item.title}`} className="rounded-full p-2 text-zinc-600 hover:bg-red-400/10 hover:text-red-300" data-testid={`button-delete-${item.id}`}><Trash2 size={15}/></button></div></div>)}</div></div>}
+      <div className="divide-y divide-white/[.07]">{query.data.map((item,index)=><div key={item.id} data-testid={`row-content-${item.id}`} className="grid gap-3 px-4 py-4 sm:grid-cols-[1.5fr_.7fr_.65fr_.6fr_auto] sm:items-center sm:gap-4 sm:px-5"><div className="min-w-0"><p className="truncate text-sm text-zinc-200">{item.title}</p><p className="mt-1 truncate text-xs text-zinc-600">{item.titleAr||item.description}</p></div><span className="text-xs text-zinc-500">{item.category}</span><span className={`w-fit rounded-full px-3 py-1 text-[10px] ${item.status==='published'?'bg-emerald-300/10 text-emerald-200':item.status==='archived'?'bg-zinc-400/10 text-zinc-400':'bg-amber-200/10 text-amber-100'}`}>{item.status}</span><span className="text-xs text-zinc-600">{new Date(item.updatedAt).toLocaleDateString()}</span><div className="flex items-center gap-2"><button onClick={()=>{setNotice('');setEditor(item);}} className="rounded-full border border-white/10 px-3 py-2 text-xs text-zinc-300 hover:bg-white/10" data-testid={`button-edit-${item.id}`}>Edit</button><button type="button" disabled={update.isPending} onClick={()=>void moveItem(index,-1)} aria-label={`Move ${item.title} up`} className="rounded-full p-2 text-zinc-500 hover:bg-white/10 disabled:opacity-30" data-testid={`button-move-up-${item.id}`}><ArrowUp size={14}/></button><button type="button" disabled={update.isPending} onClick={()=>void moveItem(index,1)} aria-label={`Move ${item.title} down`} className="rounded-full p-2 text-zinc-500 hover:bg-white/10 disabled:opacity-30" data-testid={`button-move-down-${item.id}`}><ArrowDown size={14}/></button><button type="button" disabled={create.isPending} onClick={()=>void duplicate(item)} className="rounded-full border border-white/10 px-3 py-2 text-xs text-zinc-400 hover:text-white disabled:opacity-40" data-testid={`button-duplicate-${item.id}`}>Duplicate</button><button disabled={publish.isPending} onClick={()=>publish.mutate({id:item.id,data:{published:item.status!=='published'}},{onSuccess:refresh,onError:e=>setNotice(e.message)})} className="rounded-full border border-white/10 px-3 py-2 text-xs text-zinc-400 hover:text-white" data-testid={`button-publish-${item.id}`}>{item.status==='published'?'Unpublish':'Publish'}</button><button onClick={()=>setConfirm(item)} aria-label={`Delete ${item.title}`} className="rounded-full p-2 text-zinc-600 hover:bg-red-400/10 hover:text-red-300" data-testid={`button-delete-${item.id}`}><Trash2 size={15}/></button></div></div>)}</div></div>}
     {notice&&<p className="mt-3 text-sm text-red-300" role="alert">{notice}</p>}
     {editor&&<ContentEditor item={editor===true?undefined:editor} onClose={()=>{setEditor(false);refresh();}}/>}
     {confirm&&<div className="fixed inset-0 z-50 grid place-items-center bg-black/70 p-4"><div className="w-full max-w-md rounded-2xl border border-white/15 bg-[#1b1d1f] p-6"><p className="eyebrow text-zinc-500">Permanent action</p><h2 className="display mt-2 text-3xl">Delete this entry?</h2><p className="mt-3 text-sm text-zinc-500">{confirm.title} will be removed from the content library.</p><div className="mt-6 flex justify-end gap-2"><Button secondary onClick={()=>setConfirm(null)}>Cancel</Button><Button disabled={del.isPending} onClick={()=>del.mutate({id:confirm.id},{onSuccess:()=>{setConfirm(null);refresh();},onError:e=>setNotice(e.message)})}>{del.isPending?'Deleting…':'Delete entry'}</Button></div></div></div>}
