@@ -3,13 +3,21 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: YOUSIVAR–Ω public content, owner administration, and integration API.
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: public
+    description: Publicly visible site content.
+  - name: admin
+    description: Authenticated owner and administrator operations.
+  - name: assistant
+    description: Server-side AI assistant.
+  - name: storage
+    description: Secure media upload and object delivery.
 paths:
   /healthz:
     get:
@@ -24,7 +32,623 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+  /site:
+    get:
+      operationId: getPublicSite
+      tags: [public]
+      summary: Get public site configuration and developer profile
+      responses:
+        "200":
+          description: Publicly safe site configuration and profile.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PublicSite"
+  /content:
+    get:
+      operationId: listPublicContent
+      tags: [public]
+      summary: List published content
+      parameters:
+        - name: category
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: search
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 30
+        - name: offset
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+      responses:
+        "200":
+          description: Published items only.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ContentItem"
+  /admin/me:
+    get:
+      operationId: getAdminIdentity
+      tags: [admin]
+      summary: Get authenticated application identity and permissions
+      responses:
+        "200":
+          description: Current identity and application role.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminIdentity"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /admin/summary:
+    get:
+      operationId: getAdminSummary
+      tags: [admin]
+      summary: Get content and activity summary
+      responses:
+        "200":
+          description: Summary derived from persisted application records.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminSummary"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /admin/activity:
+    get:
+      operationId: listAdminActivity
+      tags: [admin]
+      summary: List recent administrative audit events
+      parameters:
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 30
+      responses:
+        "200":
+          description: Recent security-relevant administrative events.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ActivityEntry"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /admin/content:
+    get:
+      operationId: listAdminContent
+      tags: [admin]
+      summary: List all content for administration
+      parameters:
+        - name: category
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: search
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: status
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [draft, published, archived]
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 50
+        - name: offset
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+      responses:
+        "200":
+          description: Filtered administrative content.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ContentItem"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+    post:
+      operationId: createContentItem
+      tags: [admin]
+      summary: Create a content item
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ContentItemInput"
+      responses:
+        "201":
+          description: Created content item.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ContentItem"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /admin/content/{id}:
+    patch:
+      operationId: updateContentItem
+      tags: [admin]
+      summary: Update a content item
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ContentItemUpdate"
+      responses:
+        "200":
+          description: Updated content item.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ContentItem"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    delete:
+      operationId: deleteContentItem
+      tags: [admin]
+      summary: Delete a content item
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "204":
+          description: Content item deleted.
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /admin/content/{id}/publish:
+    patch:
+      operationId: setContentItemPublished
+      tags: [admin]
+      summary: Publish or unpublish a content item
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PublishContentInput"
+      responses:
+        "200":
+          description: Updated publication status.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ContentItem"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /admin/settings:
+    get:
+      operationId: getAdminSettings
+      tags: [admin]
+      summary: Read editable site settings
+      responses:
+        "200":
+          description: Persisted branding and localization settings.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SiteSettings"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+    put:
+      operationId: updateAdminSettings
+      tags: [admin]
+      summary: Update editable site settings
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SiteSettingsUpdate"
+      responses:
+        "200":
+          description: Persisted settings.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SiteSettings"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /admin/profile:
+    get:
+      operationId: getAdminProfile
+      tags: [admin]
+      summary: Read developer profile
+      responses:
+        "200":
+          description: Persisted developer profile.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DeveloperProfile"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+    put:
+      operationId: updateAdminProfile
+      tags: [admin]
+      summary: Update developer profile
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DeveloperProfileInput"
+      responses:
+        "200":
+          description: Persisted developer profile.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DeveloperProfile"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /admin/providers:
+    get:
+      operationId: listAiProviders
+      tags: [admin]
+      summary: List provider configuration without exposing credentials
+      responses:
+        "200":
+          description: Provider status and non-secret model settings.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AiProvider"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /admin/providers/{provider}:
+    put:
+      operationId: updateAiProvider
+      tags: [admin]
+      summary: Update non-secret AI provider settings
+      parameters:
+        - name: provider
+          in: path
+          required: true
+          schema:
+            type: string
+            enum: [openai, gemini, groq, ollama]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AiProviderUpdate"
+      responses:
+        "200":
+          description: Saved provider settings and current configured status.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AiProvider"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /admin/assistant:
+    get:
+      operationId: getAssistantSettings
+      tags: [admin]
+      summary: Read assistant settings
+      responses:
+        "200":
+          description: Persisted assistant instructions and public appearance settings.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AssistantSettings"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+    put:
+      operationId: updateAssistantSettings
+      tags: [admin]
+      summary: Update assistant settings
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AssistantSettingsUpdate"
+      responses:
+        "200":
+          description: Persisted assistant settings.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AssistantSettings"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /admin/assistant/message:
+    post:
+      operationId: sendAssistantMessage
+      tags: [assistant]
+      summary: Send a message to the configured server-side AI provider
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AssistantMessageInput"
+      responses:
+        "200":
+          description: Assistant reply.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AssistantMessageResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "503":
+          description: Selected provider is not configured or unavailable.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+  /admin/github/import:
+    post:
+      operationId: importGithubRepository
+      tags: [admin]
+      summary: Import public GitHub repository metadata as a draft
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GithubImportInput"
+      responses:
+        "201":
+          description: Repository metadata imported as a draft item.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ContentItem"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "429":
+          description: GitHub rate limit reached.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+  /admin/users:
+    get:
+      operationId: listAdminUsers
+      tags: [admin]
+      summary: List users and application roles
+      responses:
+        "200":
+          description: Application role assignments.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AdminUser"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /admin/users/{userId}/role:
+    put:
+      operationId: updateAdminUserRole
+      tags: [admin]
+      summary: Assign an application role to a user
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AdminUserRoleUpdate"
+      responses:
+        "200":
+          description: Saved role assignment.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminUser"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /storage/uploads/request-url:
+    post:
+      operationId: requestUploadUrl
+      tags: [storage]
+      summary: Request a presigned URL for a validated media upload
+      description: The file is uploaded directly to object storage after this metadata request.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UploadUrlRequest"
+      responses:
+        "200":
+          description: Presigned upload URL generated.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UploadUrlResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /admin/media/complete:
+    post:
+      operationId: completeMediaUpload
+      tags: [storage]
+      summary: Verify uploaded file bytes and register media metadata
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MediaCompleteInput"
+      responses:
+        "201":
+          description: Verified media record.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MediaAsset"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
 components:
+  parameters:
+    Id:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+  responses:
+    BadRequest:
+      description: Invalid request.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorEnvelope"
+    Unauthorized:
+      description: Authentication is required.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorEnvelope"
+    Forbidden:
+      description: The authenticated user lacks the required application permission.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorEnvelope"
+    NotFound:
+      description: Requested record was not found.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorEnvelope"
   schemas:
     HealthStatus:
       type: object
@@ -33,4 +657,549 @@ components:
           type: string
       required:
         - status
+    ErrorEnvelope:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: string
+    ContentAction:
+      type: object
+      required: [label, url]
+      properties:
+        label:
+          type: string
+          minLength: 1
+          maxLength: 80
+        labelAr:
+          type: ["string", "null"]
+        url:
+          type: string
+          maxLength: 2048
+        kind:
+          type: string
+          enum: [primary, secondary]
+          default: secondary
+    MediaReference:
+      type: object
+      required: [url, kind]
+      properties:
+        url:
+          type: string
+          maxLength: 2048
+        kind:
+          type: string
+          enum: [image, gif, video, audio, icon]
+        alt:
+          type: ["string", "null"]
+    ContentItem:
+      type: object
+      required: [id, category, title, description, tags, actions, media, status, featured, sortOrder, createdAt, updatedAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        category:
+          type: string
+          minLength: 1
+          maxLength: 80
+        title:
+          type: string
+        titleAr:
+          type: ["string", "null"]
+        description:
+          type: string
+        descriptionAr:
+          type: ["string", "null"]
+        url:
+          type: ["string", "null"]
+        tags:
+          type: array
+          items:
+            type: string
+        actions:
+          type: array
+          items:
+            $ref: "#/components/schemas/ContentAction"
+        media:
+          type: array
+          items:
+            $ref: "#/components/schemas/MediaReference"
+        status:
+          type: string
+          enum: [draft, published, archived]
+        featured:
+          type: boolean
+        sortOrder:
+          type: integer
+        metadata:
+          type: object
+          additionalProperties: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    ContentItemInput:
+      type: object
+      required: [category, title, description]
+      properties:
+        category:
+          type: string
+          minLength: 1
+          maxLength: 80
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+        titleAr:
+          type: ["string", "null"]
+          maxLength: 200
+        description:
+          type: string
+          maxLength: 10000
+        descriptionAr:
+          type: ["string", "null"]
+          maxLength: 10000
+        url:
+          type: ["string", "null"]
+          maxLength: 2048
+        tags:
+          type: array
+          items:
+            type: string
+            maxLength: 60
+        actions:
+          type: array
+          items:
+            $ref: "#/components/schemas/ContentAction"
+        media:
+          type: array
+          items:
+            $ref: "#/components/schemas/MediaReference"
+        status:
+          type: string
+          enum: [draft, published, archived]
+          default: draft
+        featured:
+          type: boolean
+          default: false
+        sortOrder:
+          type: integer
+          default: 0
+        metadata:
+          type: object
+          additionalProperties: true
+    ContentItemUpdate:
+      type: object
+      properties:
+        category:
+          type: string
+          minLength: 1
+          maxLength: 80
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+        titleAr:
+          type: ["string", "null"]
+          maxLength: 200
+        description:
+          type: string
+          maxLength: 10000
+        descriptionAr:
+          type: ["string", "null"]
+          maxLength: 10000
+        url:
+          type: ["string", "null"]
+          maxLength: 2048
+        tags:
+          type: array
+          items:
+            type: string
+            maxLength: 60
+        actions:
+          type: array
+          items:
+            $ref: "#/components/schemas/ContentAction"
+        media:
+          type: array
+          items:
+            $ref: "#/components/schemas/MediaReference"
+        status:
+          type: string
+          enum: [draft, published, archived]
+        featured:
+          type: boolean
+        sortOrder:
+          type: integer
+        metadata:
+          type: object
+          additionalProperties: true
+    PublishContentInput:
+      type: object
+      required: [published]
+      properties:
+        published:
+          type: boolean
+    SiteSettings:
+      type: object
+      required: [projectName, projectNameAr, tagline, taglineAr, defaultLocale, accentColor, reducedMotion]
+      properties:
+        projectName:
+          type: string
+        projectNameAr:
+          type: string
+        tagline:
+          type: string
+        taglineAr:
+          type: string
+        defaultLocale:
+          type: string
+          enum: [en, ar]
+        accentColor:
+          type: string
+        reducedMotion:
+          type: boolean
+    SiteSettingsUpdate:
+      type: object
+      required: [projectName, projectNameAr, tagline, taglineAr, defaultLocale, accentColor, reducedMotion]
+      properties:
+        projectName:
+          type: string
+          minLength: 1
+          maxLength: 100
+        projectNameAr:
+          type: string
+          minLength: 1
+          maxLength: 100
+        tagline:
+          type: string
+          maxLength: 300
+        taglineAr:
+          type: string
+          maxLength: 300
+        defaultLocale:
+          type: string
+          enum: [en, ar]
+        accentColor:
+          type: string
+          pattern: "^#[0-9A-Fa-f]{6}$"
+        reducedMotion:
+          type: boolean
+    DeveloperProfile:
+      type: object
+      required: [name, nameAr, biography, biographyAr, skills, socials]
+      properties:
+        name:
+          type: string
+        nameAr:
+          type: string
+        biography:
+          type: string
+        biographyAr:
+          type: string
+        portraitUrl:
+          type: ["string", "null"]
+        skills:
+          type: array
+          items:
+            type: string
+        socials:
+          type: array
+          items:
+            $ref: "#/components/schemas/SocialLink"
+    DeveloperProfileInput:
+      type: object
+      required: [name, nameAr, biography, biographyAr, skills, socials]
+      properties:
+        name:
+          type: string
+          maxLength: 120
+        nameAr:
+          type: string
+          maxLength: 120
+        biography:
+          type: string
+          maxLength: 5000
+        biographyAr:
+          type: string
+          maxLength: 5000
+        portraitUrl:
+          type: ["string", "null"]
+          maxLength: 2048
+        skills:
+          type: array
+          items:
+            type: string
+            maxLength: 80
+        socials:
+          type: array
+          items:
+            $ref: "#/components/schemas/SocialLink"
+    SocialLink:
+      type: object
+      required: [label, url, visible]
+      properties:
+        label:
+          type: string
+          maxLength: 60
+        url:
+          type: string
+          maxLength: 2048
+        visible:
+          type: boolean
+    PublicSite:
+      type: object
+      required: [settings, profile]
+      properties:
+        settings:
+          $ref: "#/components/schemas/SiteSettings"
+        profile:
+          $ref: "#/components/schemas/DeveloperProfile"
+    AdminIdentity:
+      type: object
+      required: [userId, email, role, permissions]
+      properties:
+        userId:
+          type: string
+        email:
+          type: string
+        role:
+          type: string
+          enum: [OWNER, SUPER_ADMIN, ADMIN, PARTNER, CUSTOM_ROLE]
+        permissions:
+          type: array
+          items:
+            type: string
+    AdminSummary:
+      type: object
+      required: [totalContent, publishedContent, draftContent, categoryCount, recentActivityCount]
+      properties:
+        totalContent:
+          type: integer
+        publishedContent:
+          type: integer
+        draftContent:
+          type: integer
+        categoryCount:
+          type: integer
+        recentActivityCount:
+          type: integer
+    ActivityEntry:
+      type: object
+      required: [id, actor, action, target, createdAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        actor:
+          type: string
+        action:
+          type: string
+        target:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+    AiProvider:
+      type: object
+      required: [provider, model, configured, enabled]
+      properties:
+        provider:
+          type: string
+          enum: [openai, gemini, groq, ollama]
+        model:
+          type: string
+        endpoint:
+          type: ["string", "null"]
+        configured:
+          type: boolean
+        enabled:
+          type: boolean
+    AiProviderUpdate:
+      type: object
+      required: [model, enabled]
+      properties:
+        model:
+          type: string
+          minLength: 1
+          maxLength: 120
+        endpoint:
+          type: ["string", "null"]
+          maxLength: 300
+        enabled:
+          type: boolean
+    AssistantSettings:
+      type: object
+      required: [name, nameAr, welcomeMessage, welcomeMessageAr, instructions, provider, model, enabled, visible]
+      properties:
+        name:
+          type: string
+        nameAr:
+          type: string
+        welcomeMessage:
+          type: string
+        welcomeMessageAr:
+          type: string
+        instructions:
+          type: string
+        provider:
+          type: string
+          enum: [openai, gemini, groq, ollama]
+        model:
+          type: string
+        enabled:
+          type: boolean
+        visible:
+          type: boolean
+    AssistantSettingsUpdate:
+      type: object
+      required: [name, nameAr, welcomeMessage, welcomeMessageAr, instructions, provider, model, enabled, visible]
+      properties:
+        name:
+          type: string
+          maxLength: 100
+        nameAr:
+          type: string
+          maxLength: 100
+        welcomeMessage:
+          type: string
+          maxLength: 500
+        welcomeMessageAr:
+          type: string
+          maxLength: 500
+        instructions:
+          type: string
+          maxLength: 10000
+        provider:
+          type: string
+          enum: [openai, gemini, groq, ollama]
+        model:
+          type: string
+          maxLength: 120
+        enabled:
+          type: boolean
+        visible:
+          type: boolean
+    AssistantMessageInput:
+      type: object
+      required: [message]
+      properties:
+        message:
+          type: string
+          minLength: 1
+          maxLength: 4000
+        conversationId:
+          type: ["string", "null"]
+          maxLength: 100
+    AssistantMessageResponse:
+      type: object
+      required: [reply, provider, model]
+      properties:
+        reply:
+          type: string
+        provider:
+          type: string
+        model:
+          type: string
+    GithubImportInput:
+      type: object
+      required: [repositoryUrl]
+      properties:
+        repositoryUrl:
+          type: string
+          format: uri
+          maxLength: 2048
+    AdminUser:
+      type: object
+      required: [userId, email, role, permissions]
+      properties:
+        userId:
+          type: string
+        email:
+          type: string
+        role:
+          type: string
+          enum: [OWNER, SUPER_ADMIN, ADMIN, PARTNER, CUSTOM_ROLE]
+        permissions:
+          type: array
+          items:
+            type: string
+    AdminUserRoleUpdate:
+      type: object
+      required: [role, permissions]
+      properties:
+        role:
+          type: string
+          enum: [SUPER_ADMIN, ADMIN, PARTNER, CUSTOM_ROLE]
+        permissions:
+          type: array
+          items:
+            type: string
+            enum: [content:read, content:write, content:publish, media:write, settings:write, integrations:write, users:manage, audit:read]
+    UploadUrlRequest:
+      type: object
+      required: [name, size, contentType]
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 255
+        size:
+          type: integer
+          minimum: 1
+          maximum: 52428800
+        contentType:
+          type: string
+          enum: [image/png, image/jpeg, image/webp, image/gif, image/svg+xml, video/mp4, video/webm, audio/mpeg, audio/ogg, audio/wav, font/woff, font/woff2]
+    UploadUrlResponse:
+      type: object
+      required: [uploadURL, objectPath]
+      properties:
+        uploadURL:
+          type: string
+          format: uri
+        objectPath:
+          type: string
+        metadata:
+          $ref: "#/components/schemas/UploadUrlRequest"
+    MediaCompleteInput:
+      type: object
+      required: [objectPath, name, size, contentType]
+      properties:
+        objectPath:
+          type: string
+          minLength: 1
+          maxLength: 2048
+        name:
+          type: string
+          minLength: 1
+          maxLength: 255
+        size:
+          type: integer
+          minimum: 1
+          maximum: 52428800
+        contentType:
+          type: string
+          minLength: 1
+    MediaAsset:
+      type: object
+      required: [id, name, objectPath, contentType, size, createdAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        objectPath:
+          type: string
+        contentType:
+          type: string
+        size:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
 
