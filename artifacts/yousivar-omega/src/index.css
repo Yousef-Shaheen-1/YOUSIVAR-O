@@ -322,9 +322,65 @@
   }
 }
 
+/**
+ * Owner-managed visual identity.
+ *
+ * These are the shipped values; `ThemeRuntime` overwrites them at runtime from
+ * the saved theme, so every surface below follows the owner's palette and type
+ * without a rebuild. Anything that wants to be themeable must read one of these
+ * variables instead of a literal colour.
+ */
+:root {
+  --omega-background: #101214;
+  --omega-surface: #191b1d;
+  --omega-surface-alt: #17191b;
+  --omega-border: #2b2e30;
+  --omega-text: #e9e7e0;
+  --omega-highlight: #ffffff;
+  --omega-muted: #a1a2a1;
+  --omega-muted-soft: #71717a;
+  --omega-muted-faint: #52525b;
+  --omega-accent: #c7bfae;
+  --omega-primary: #c6beac;
+  --omega-primary-hover: #ded7c6;
+  --omega-secondary: #bdb5a2;
+  --omega-focus: #c9c0aa;
+  --omega-glass: #ffffff;
+  --omega-gradient-from: #434546;
+  --omega-gradient-to: #131517;
+  --omega-base-size: 16px;
+  --omega-body-line-height: 1.75;
+  --omega-body-tracking: 0em;
+  --omega-body-weight: 400;
+  --omega-heading-weight: 400;
+  --app-font-sans-ar: 'DM Sans', sans-serif;
+  --app-font-serif-ar: 'Instrument Serif', serif;
+  --app-font-mono-ar: 'Space Mono', monospace;
+}
+
 :root { color-scheme: light; }
-html { scroll-behavior: smooth; }
-body { min-width: 320px; background: #e7e8e9; }
+html { scroll-behavior: smooth; font-size: var(--omega-base-size); }
+/* Arabic type settings take over whenever the document renders RTL. */
+html[dir='rtl'] {
+  --app-font-sans: var(--app-font-sans-ar);
+  --app-font-serif: var(--app-font-serif-ar);
+  --app-font-mono: var(--app-font-mono-ar);
+}
+html[data-reduced-motion='true'] *,
+html[data-reduced-motion='true'] *::before,
+html[data-reduced-motion='true'] *::after {
+  animation-duration: .01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: .01ms !important;
+  scroll-behavior: auto !important;
+}
+body {
+  min-width: 320px;
+  background: #e7e8e9;
+  line-height: var(--omega-body-line-height);
+  letter-spacing: var(--omega-body-tracking);
+  font-weight: var(--omega-body-weight);
+}
 button, input, textarea, select { font: inherit; }
 button, a, input, textarea, select { -webkit-tap-highlight-color: transparent; }
 ::selection { background: #c5bda9; color: #17191b; }
@@ -332,12 +388,12 @@ button, a, input, textarea, select { -webkit-tap-highlight-color: transparent; }
   content: ""; position: fixed; inset: 0; z-index: 50; pointer-events: none;
   opacity: .035; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.7'/%3E%3C/svg%3E");
 }
-.metal { background: linear-gradient(125deg,#f3f1ec 0%,#b7b9ba 23%,#e8e7e3 42%,#a3a6a7 62%,#deddd8 100%); }
-.glass { background: linear-gradient(145deg,rgba(255,255,255,.12),rgba(255,255,255,.025)); border: 1px solid rgba(255,255,255,.15); backdrop-filter: blur(18px); }
-.admin-surface { background: linear-gradient(145deg,rgba(255,255,255,.055),rgba(255,255,255,.018)); border: 1px solid rgba(255,255,255,.1); }
+.metal { background: linear-gradient(125deg, var(--omega-glass) 0%, var(--omega-accent) 23%, color-mix(in srgb, var(--omega-glass) 88%, var(--omega-accent)) 42%, var(--omega-secondary) 62%, color-mix(in srgb, var(--omega-glass) 82%, var(--omega-secondary)) 100%); }
+.glass { background: linear-gradient(145deg,color-mix(in srgb,var(--omega-glass) 12%,transparent),color-mix(in srgb,var(--omega-glass) 2.5%,transparent)); border: 1px solid color-mix(in srgb,var(--omega-glass) 15%,transparent); backdrop-filter: blur(18px); }
+.admin-surface { background: linear-gradient(145deg,color-mix(in srgb,var(--omega-glass) 5.5%,transparent),color-mix(in srgb,var(--omega-glass) 1.8%,transparent)); border: 1px solid color-mix(in srgb,var(--omega-glass) 10%,transparent); }
 .eyebrow { font-family: var(--app-font-mono); font-size: 10px; letter-spacing: .17em; text-transform: uppercase; }
-.display { font-family: var(--app-font-serif); }
-.focus-ring:focus-visible { outline: 2px solid #c9c0aa; outline-offset: 3px; }
+.display { font-family: var(--app-font-serif); font-weight: var(--omega-heading-weight); }
+.focus-ring:focus-visible { outline: 2px solid var(--omega-focus); outline-offset: 3px; }
 .rise { animation: rise .7s cubic-bezier(.2,.75,.25,1) both; }
 .rise-delay { animation: rise .8s .12s cubic-bezier(.2,.75,.25,1) both; }
 @keyframes rise { from { opacity: 0; transform: translateY(18px) } to { opacity: 1; transform: translateY(0) } }

@@ -6,6 +6,7 @@
  * OpenAPI spec version: 0.1.0
  */
 import type { SiteSettingsDefaultLocale } from './siteSettingsDefaultLocale';
+import type { SiteTheme } from './siteTheme';
 
 export interface SiteSettings {
   projectName: string;
@@ -15,4 +16,5 @@ export interface SiteSettings {
   defaultLocale: SiteSettingsDefaultLocale;
   accentColor: string;
   reducedMotion: boolean;
+  theme: SiteTheme;
 }

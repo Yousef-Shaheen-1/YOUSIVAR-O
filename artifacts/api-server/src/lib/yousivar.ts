@@ -4,6 +4,7 @@ import {
   ObjectStorageService,
   type ObjectStorageService as StorageService,
 } from "./objectStorage";
+import { DEFAULT_THEME, mergeSiteTheme, type SiteTheme } from "./theme";
 
 export type SiteSettings = {
   projectName: string;
@@ -13,7 +14,10 @@ export type SiteSettings = {
   defaultLocale: "en" | "ar";
   accentColor: string;
   reducedMotion: boolean;
+  theme: SiteTheme;
 };
+
+export const SITE_SETTINGS_KEY = "site-settings";
 
 export type DeveloperProfile = {
   name: string;
@@ -51,7 +55,22 @@ export const DEFAULT_SITE_SETTINGS: SiteSettings = {
   defaultLocale: "ar",
   accentColor: "#A6A6A6",
   reducedMotion: false,
+  theme: DEFAULT_THEME,
 };
+
+/**
+ * The stored settings with every optional piece filled in. Settings records
+ * written before a field existed (the theme, for instance) are completed here
+ * rather than rejected by validation.
+ */
+export async function readSiteSettings(): Promise<SiteSettings> {
+  const stored = await readSiteRecord<Partial<SiteSettings>>(SITE_SETTINGS_KEY, {});
+  return {
+    ...DEFAULT_SITE_SETTINGS,
+    ...stored,
+    theme: mergeSiteTheme(stored?.theme),
+  };
+}
 
 export const DEFAULT_PROFILE: DeveloperProfile = {
   name: "",

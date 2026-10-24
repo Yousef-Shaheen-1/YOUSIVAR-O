@@ -843,9 +843,72 @@ components:
       properties:
         published:
           type: boolean
+    ThemeColors:
+      type: object
+      description: Editable palette. Every value is a six digit hex colour, applied to the public site and the console.
+      required: [background, surface, surfaceAlt, border, text, highlight, mutedText, mutedSoft, mutedFaint, accent, primary, primaryHover, secondary, focusRing, glass, gradientFrom, gradientTo]
+      properties:
+        background: { type: string, pattern: "^#[0-9A-Fa-f]{6}$" }
+        surface: { type: string, pattern: "^#[0-9A-Fa-f]{6}$" }
+        surfaceAlt: { type: string, pattern: "^#[0-9A-Fa-f]{6}$" }
+        border: { type: string, pattern: "^#[0-9A-Fa-f]{6}$" }
+        text: { type: string, pattern: "^#[0-9A-Fa-f]{6}$" }
+        highlight: { type: string, pattern: "^#[0-9A-Fa-f]{6}$" }
+        mutedText: { type: string, pattern: "^#[0-9A-Fa-f]{6}$" }
+        mutedSoft: { type: string, pattern: "^#[0-9A-Fa-f]{6}$" }
+        mutedFaint: { type: string, pattern: "^#[0-9A-Fa-f]{6}$" }
+        accent: { type: string, pattern: "^#[0-9A-Fa-f]{6}$" }
+        primary: { type: string, pattern: "^#[0-9A-Fa-f]{6}$" }
+        primaryHover: { type: string, pattern: "^#[0-9A-Fa-f]{6}$" }
+        secondary: { type: string, pattern: "^#[0-9A-Fa-f]{6}$" }
+        focusRing: { type: string, pattern: "^#[0-9A-Fa-f]{6}$" }
+        glass: { type: string, pattern: "^#[0-9A-Fa-f]{6}$" }
+        gradientFrom: { type: string, pattern: "^#[0-9A-Fa-f]{6}$" }
+        gradientTo: { type: string, pattern: "^#[0-9A-Fa-f]{6}$" }
+    ThemeTypography:
+      type: object
+      description: Editable type system. Font families are Google Fonts family names injected at runtime; the Arabic families apply whenever the site renders RTL.
+      required: [fontSans, fontSerif, fontMono, fontSansAr, fontSerifAr, fontMonoAr, baseFontSize, bodyLineHeight, bodyLetterSpacing, bodyWeight, headingWeight]
+      properties:
+        fontSans: { type: string, maxLength: 80 }
+        fontSerif: { type: string, maxLength: 80 }
+        fontMono: { type: string, maxLength: 80 }
+        fontSansAr: { type: string, maxLength: 80 }
+        fontSerifAr: { type: string, maxLength: 80 }
+        fontMonoAr: { type: string, maxLength: 80 }
+        baseFontSize: { type: number, minimum: 14, maximum: 19 }
+        bodyLineHeight: { type: number, minimum: 1.2, maximum: 2.2 }
+        bodyLetterSpacing: { type: number, minimum: -0.05, maximum: 0.2 }
+        bodyWeight: { type: integer, minimum: 300, maximum: 700 }
+        headingWeight: { type: integer, minimum: 300, maximum: 800 }
+    ThemeIdentity:
+      type: object
+      description: Editable identity marks and wording. An empty logo URL keeps the typographic mark.
+      required: [logoMark, logoUrl, faviconUrl, navWork, navWorkAr, navAbout, navAboutAr, privateConsole, privateConsoleAr, ctaWork, ctaWorkAr, sectionWorkTitle, sectionWorkTitleAr]
+      properties:
+        logoMark: { type: string, maxLength: 8 }
+        logoUrl: { type: string, maxLength: 2048 }
+        faviconUrl: { type: string, maxLength: 2048 }
+        navWork: { type: string, maxLength: 60 }
+        navWorkAr: { type: string, maxLength: 60 }
+        navAbout: { type: string, maxLength: 60 }
+        navAboutAr: { type: string, maxLength: 60 }
+        privateConsole: { type: string, maxLength: 60 }
+        privateConsoleAr: { type: string, maxLength: 60 }
+        ctaWork: { type: string, maxLength: 60 }
+        ctaWorkAr: { type: string, maxLength: 60 }
+        sectionWorkTitle: { type: string, maxLength: 80 }
+        sectionWorkTitleAr: { type: string, maxLength: 80 }
+    SiteTheme:
+      type: object
+      required: [colors, typography, identity]
+      properties:
+        colors: { $ref: "#/components/schemas/ThemeColors" }
+        typography: { $ref: "#/components/schemas/ThemeTypography" }
+        identity: { $ref: "#/components/schemas/ThemeIdentity" }
     SiteSettings:
       type: object
-      required: [projectName, projectNameAr, tagline, taglineAr, defaultLocale, accentColor, reducedMotion]
+      required: [projectName, projectNameAr, tagline, taglineAr, defaultLocale, accentColor, reducedMotion, theme]
       properties:
         projectName:
           type: string
@@ -862,9 +925,11 @@ components:
           type: string
         reducedMotion:
           type: boolean
+        theme:
+          $ref: "#/components/schemas/SiteTheme"
     SiteSettingsUpdate:
       type: object
-      required: [projectName, projectNameAr, tagline, taglineAr, defaultLocale, accentColor, reducedMotion]
+      required: [projectName, projectNameAr, tagline, taglineAr, defaultLocale, accentColor, reducedMotion, theme]
       properties:
         projectName:
           type: string
@@ -888,6 +953,15 @@ components:
           pattern: "^#[0-9A-Fa-f]{6}$"
         reducedMotion:
           type: boolean
+        theme:
+          $ref: "#/components/schemas/SiteThemeUpdate"
+    SiteThemeUpdate:
+      type: object
+      required: [colors, typography, identity]
+      properties:
+        colors: { $ref: "#/components/schemas/ThemeColors" }
+        typography: { $ref: "#/components/schemas/ThemeTypography" }
+        identity: { $ref: "#/components/schemas/ThemeIdentity" }
     DeveloperProfile:
       type: object
       required: [name, nameAr, biography, biographyAr, skills, socials]

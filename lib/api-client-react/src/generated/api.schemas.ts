@@ -192,6 +192,127 @@ export interface PublishContentInput {
   published: boolean;
 }
 
+/**
+ * Editable palette. Every value is a six digit hex colour, applied to the public site and the console.
+ */
+export interface ThemeColors {
+  /** @pattern ^#[0-9A-Fa-f]{6}$ */
+  background: string;
+  /** @pattern ^#[0-9A-Fa-f]{6}$ */
+  surface: string;
+  /** @pattern ^#[0-9A-Fa-f]{6}$ */
+  surfaceAlt: string;
+  /** @pattern ^#[0-9A-Fa-f]{6}$ */
+  border: string;
+  /** @pattern ^#[0-9A-Fa-f]{6}$ */
+  text: string;
+  /** @pattern ^#[0-9A-Fa-f]{6}$ */
+  highlight: string;
+  /** @pattern ^#[0-9A-Fa-f]{6}$ */
+  mutedText: string;
+  /** @pattern ^#[0-9A-Fa-f]{6}$ */
+  mutedSoft: string;
+  /** @pattern ^#[0-9A-Fa-f]{6}$ */
+  mutedFaint: string;
+  /** @pattern ^#[0-9A-Fa-f]{6}$ */
+  accent: string;
+  /** @pattern ^#[0-9A-Fa-f]{6}$ */
+  primary: string;
+  /** @pattern ^#[0-9A-Fa-f]{6}$ */
+  primaryHover: string;
+  /** @pattern ^#[0-9A-Fa-f]{6}$ */
+  secondary: string;
+  /** @pattern ^#[0-9A-Fa-f]{6}$ */
+  focusRing: string;
+  /** @pattern ^#[0-9A-Fa-f]{6}$ */
+  glass: string;
+  /** @pattern ^#[0-9A-Fa-f]{6}$ */
+  gradientFrom: string;
+  /** @pattern ^#[0-9A-Fa-f]{6}$ */
+  gradientTo: string;
+}
+
+/**
+ * Editable type system. Font families are Google Fonts family names injected at runtime; the Arabic families apply whenever the site renders RTL.
+ */
+export interface ThemeTypography {
+  /** @maxLength 80 */
+  fontSans: string;
+  /** @maxLength 80 */
+  fontSerif: string;
+  /** @maxLength 80 */
+  fontMono: string;
+  /** @maxLength 80 */
+  fontSansAr: string;
+  /** @maxLength 80 */
+  fontSerifAr: string;
+  /** @maxLength 80 */
+  fontMonoAr: string;
+  /**
+     * @minimum 14
+     * @maximum 19
+     */
+  baseFontSize: number;
+  /**
+     * @minimum 1.2
+     * @maximum 2.2
+     */
+  bodyLineHeight: number;
+  /**
+     * @minimum -0.05
+     * @maximum 0.2
+     */
+  bodyLetterSpacing: number;
+  /**
+     * @minimum 300
+     * @maximum 700
+     */
+  bodyWeight: number;
+  /**
+     * @minimum 300
+     * @maximum 800
+     */
+  headingWeight: number;
+}
+
+/**
+ * Editable identity marks and wording. An empty logo URL keeps the typographic mark.
+ */
+export interface ThemeIdentity {
+  /** @maxLength 8 */
+  logoMark: string;
+  /** @maxLength 2048 */
+  logoUrl: string;
+  /** @maxLength 2048 */
+  faviconUrl: string;
+  /** @maxLength 60 */
+  navWork: string;
+  /** @maxLength 60 */
+  navWorkAr: string;
+  /** @maxLength 60 */
+  navAbout: string;
+  /** @maxLength 60 */
+  navAboutAr: string;
+  /** @maxLength 60 */
+  privateConsole: string;
+  /** @maxLength 60 */
+  privateConsoleAr: string;
+  /** @maxLength 60 */
+  ctaWork: string;
+  /** @maxLength 60 */
+  ctaWorkAr: string;
+  /** @maxLength 80 */
+  sectionWorkTitle: string;
+  /** @maxLength 80 */
+  sectionWorkTitleAr: string;
+}
+
+export interface SiteTheme {
+  colors: ThemeColors;
+  typography: ThemeTypography;
+  identity: ThemeIdentity;
+}
+
 export type SiteSettingsDefaultLocale = typeof SiteSettingsDefaultLocale[keyof typeof SiteSettingsDefaultLocale];
 
 
@@ -208,6 +329,7 @@ export interface SiteSettings {
   defaultLocale: SiteSettingsDefaultLocale;
   accentColor: string;
   reducedMotion: boolean;
+  theme: SiteTheme;
 }
 
 export type SiteSettingsUpdateDefaultLocale = typeof SiteSettingsUpdateDefaultLocale[keyof typeof SiteSettingsUpdateDefaultLocale];
@@ -217,6 +339,12 @@ export const SiteSettingsUpdateDefaultLocale = {
   en: 'en',
   ar: 'ar',
 } as const;
+
+export interface SiteThemeUpdate {
+  colors: ThemeColors;
+  typography: ThemeTypography;
+  identity: ThemeIdentity;
+}
 
 export interface SiteSettingsUpdate {
   /**
@@ -237,6 +365,7 @@ export interface SiteSettingsUpdate {
   /** @pattern ^#[0-9A-Fa-f]{6}$ */
   accentColor: string;
   reducedMotion: boolean;
+  theme: SiteThemeUpdate;
 }
 
 export interface SocialLink {

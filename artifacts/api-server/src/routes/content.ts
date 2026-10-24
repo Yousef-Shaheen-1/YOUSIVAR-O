@@ -37,14 +37,15 @@ import {
 import { requirePermission } from "../middlewares/auth";
 import {
   DEFAULT_PROFILE,
-  DEFAULT_SITE_SETTINGS,
+  SITE_SETTINGS_KEY,
   readSiteRecord,
+  readSiteSettings,
   setMediaVisibility,
   writeAudit,
   writeSiteRecord,
   type DeveloperProfile,
-  type SiteSettings,
 } from "../lib/yousivar";
+import { mergeSiteTheme } from "../lib/theme";
 import { mediaAssets } from "@workspace/db";
 import { eq as equals } from "drizzle-orm";
 
@@ -110,7 +111,7 @@ function isSafeContentPayload(data: {
 
 router.get("/site", async (_req, res): Promise<void> => {
   const [settings, profile] = await Promise.all([
-    readSiteRecord<SiteSettings>("site-settings", DEFAULT_SITE_SETTINGS),
+    readSiteSettings(),
     readSiteRecord<DeveloperProfile>("developer-profile", DEFAULT_PROFILE),
   ]);
   res.json(
@@ -477,8 +478,7 @@ router.get(
   "/admin/settings",
   requirePermission("settings:write"),
   async (_req, res): Promise<void> => {
-    const value = await readSiteRecord<SiteSettings>("site-settings", DEFAULT_SITE_SETTINGS);
-    res.json(GetAdminSettingsResponse.parse(value));
+    res.json(GetAdminSettingsResponse.parse(await readSiteSettings()));
   },
 );
 
@@ -491,8 +491,11 @@ router.put(
       res.status(400).json({ error: parsed.error.message });
       return;
     }
-    const value = await writeSiteRecord("site-settings", parsed.data);
-    await writeAudit(req.appIdentity!.userId, req.appIdentity!.email, "settings.update", "site-settings");
+    const value = await writeSiteRecord(SITE_SETTINGS_KEY, {
+      ...parsed.data,
+      theme: mergeSiteTheme(parsed.data.theme),
+    });
+    await writeAudit(req.appIdentity!.userId, req.appIdentity!.email, "settings.update", SITE_SETTINGS_KEY);
     res.json(UpdateAdminSettingsResponse.parse(value));
   },
 );

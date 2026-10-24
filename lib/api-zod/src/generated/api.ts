@@ -20,6 +20,76 @@ export const HealthCheckResponse = zod.object({
 /**
  * @summary Get public site configuration and developer profile
  */
+export const getPublicSiteResponseSettingsThemeColorsBackgroundRegExp = new RegExp('^#[0-9A-Fa-f]{6}$');
+export const getPublicSiteResponseSettingsThemeColorsSurfaceRegExp = new RegExp('^#[0-9A-Fa-f]{6}$');
+export const getPublicSiteResponseSettingsThemeColorsSurfaceAltRegExp = new RegExp('^#[0-9A-Fa-f]{6}$');
+export const getPublicSiteResponseSettingsThemeColorsBorderRegExp = new RegExp('^#[0-9A-Fa-f]{6}$');
+export const getPublicSiteResponseSettingsThemeColorsTextRegExp = new RegExp('^#[0-9A-Fa-f]{6}$');
+export const getPublicSiteResponseSettingsThemeColorsHighlightRegExp = new RegExp('^#[0-9A-Fa-f]{6}$');
+export const getPublicSiteResponseSettingsThemeColorsMutedTextRegExp = new RegExp('^#[0-9A-Fa-f]{6}$');
+export const getPublicSiteResponseSettingsThemeColorsMutedSoftRegExp = new RegExp('^#[0-9A-Fa-f]{6}$');
+export const getPublicSiteResponseSettingsThemeColorsMutedFaintRegExp = new RegExp('^#[0-9A-Fa-f]{6}$');
+export const getPublicSiteResponseSettingsThemeColorsAccentRegExp = new RegExp('^#[0-9A-Fa-f]{6}$');
+export const getPublicSiteResponseSettingsThemeColorsPrimaryRegExp = new RegExp('^#[0-9A-Fa-f]{6}$');
+export const getPublicSiteResponseSettingsThemeColorsPrimaryHoverRegExp = new RegExp('^#[0-9A-Fa-f]{6}$');
+export const getPublicSiteResponseSettingsThemeColorsSecondaryRegExp = new RegExp('^#[0-9A-Fa-f]{6}$');
+export const getPublicSiteResponseSettingsThemeColorsFocusRingRegExp = new RegExp('^#[0-9A-Fa-f]{6}$');
+export const getPublicSiteResponseSettingsThemeColorsGlassRegExp = new RegExp('^#[0-9A-Fa-f]{6}$');
+export const getPublicSiteResponseSettingsThemeColorsGradientFromRegExp = new RegExp('^#[0-9A-Fa-f]{6}$');
+export const getPublicSiteResponseSettingsThemeColorsGradientToRegExp = new RegExp('^#[0-9A-Fa-f]{6}$');
+export const getPublicSiteResponseSettingsThemeTypographyFontSansMax = 80;
+
+export const getPublicSiteResponseSettingsThemeTypographyFontSerifMax = 80;
+
+export const getPublicSiteResponseSettingsThemeTypographyFontMonoMax = 80;
+
+export const getPublicSiteResponseSettingsThemeTypographyFontSansArMax = 80;
+
+export const getPublicSiteResponseSettingsThemeTypographyFontSerifArMax = 80;
+
+export const getPublicSiteResponseSettingsThemeTypographyFontMonoArMax = 80;
+
+export const getPublicSiteResponseSettingsThemeTypographyBaseFontSizeMin = 14;
+export const getPublicSiteResponseSettingsThemeTypographyBaseFontSizeMax = 19;
+
+export const getPublicSiteResponseSettingsThemeTypographyBodyLineHeightMin = 1.2;
+export const getPublicSiteResponseSettingsThemeTypographyBodyLineHeightMax = 2.2;
+
+export const getPublicSiteResponseSettingsThemeTypographyBodyLetterSpacingMin = -0.05;
+export const getPublicSiteResponseSettingsThemeTypographyBodyLetterSpacingMax = 0.2;
+
+export const getPublicSiteResponseSettingsThemeTypographyBodyWeightMin = 300;
+export const getPublicSiteResponseSettingsThemeTypographyBodyWeightMax = 700;
+
+export const getPublicSiteResponseSettingsThemeTypographyHeadingWeightMin = 300;
+export const getPublicSiteResponseSettingsThemeTypographyHeadingWeightMax = 800;
+
+export const getPublicSiteResponseSettingsThemeIdentityLogoMarkMax = 8;
+
+export const getPublicSiteResponseSettingsThemeIdentityLogoUrlMax = 2048;
+
+export const getPublicSiteResponseSettingsThemeIdentityFaviconUrlMax = 2048;
+
+export const getPublicSiteResponseSettingsThemeIdentityNavWorkMax = 60;
+
+export const getPublicSiteResponseSettingsThemeIdentityNavWorkArMax = 60;
+
+export const getPublicSiteResponseSettingsThemeIdentityNavAboutMax = 60;
+
+export const getPublicSiteResponseSettingsThemeIdentityNavAboutArMax = 60;
+
+export const getPublicSiteResponseSettingsThemeIdentityPrivateConsoleMax = 60;
+
+export const getPublicSiteResponseSettingsThemeIdentityPrivateConsoleArMax = 60;
+
+export const getPublicSiteResponseSettingsThemeIdentityCtaWorkMax = 60;
+
+export const getPublicSiteResponseSettingsThemeIdentityCtaWorkArMax = 60;
+
+export const getPublicSiteResponseSettingsThemeIdentitySectionWorkTitleMax = 80;
+
+export const getPublicSiteResponseSettingsThemeIdentitySectionWorkTitleArMax = 80;
+
 export const getPublicSiteResponseProfileSocialsItemLabelMax = 60;
 
 export const getPublicSiteResponseProfileSocialsItemUrlMax = 2048;
@@ -34,7 +104,56 @@ export const GetPublicSiteResponse = zod.object({
   "taglineAr": zod.string(),
   "defaultLocale": zod.enum(['en', 'ar']),
   "accentColor": zod.string(),
-  "reducedMotion": zod.boolean()
+  "reducedMotion": zod.boolean(),
+  "theme": zod.object({
+  "colors": zod.object({
+  "background": zod.string().regex(getPublicSiteResponseSettingsThemeColorsBackgroundRegExp),
+  "surface": zod.string().regex(getPublicSiteResponseSettingsThemeColorsSurfaceRegExp),
+  "surfaceAlt": zod.string().regex(getPublicSiteResponseSettingsThemeColorsSurfaceAltRegExp),
+  "border": zod.string().regex(getPublicSiteResponseSettingsThemeColorsBorderRegExp),
+  "text": zod.string().regex(getPublicSiteResponseSettingsThemeColorsTextRegExp),
+  "highlight": zod.string().regex(getPublicSiteResponseSettingsThemeColorsHighlightRegExp),
+  "mutedText": zod.string().regex(getPublicSiteResponseSettingsThemeColorsMutedTextRegExp),
+  "mutedSoft": zod.string().regex(getPublicSiteResponseSettingsThemeColorsMutedSoftRegExp),
+  "mutedFaint": zod.string().regex(getPublicSiteResponseSettingsThemeColorsMutedFaintRegExp),
+  "accent": zod.string().regex(getPublicSiteResponseSettingsThemeColorsAccentRegExp),
+  "primary": zod.string().regex(getPublicSiteResponseSettingsThemeColorsPrimaryRegExp),
+  "primaryHover": zod.string().regex(getPublicSiteResponseSettingsThemeColorsPrimaryHoverRegExp),
+  "secondary": zod.string().regex(getPublicSiteResponseSettingsThemeColorsSecondaryRegExp),
+  "focusRing": zod.string().regex(getPublicSiteResponseSettingsThemeColorsFocusRingRegExp),
+  "glass": zod.string().regex(getPublicSiteResponseSettingsThemeColorsGlassRegExp),
+  "gradientFrom": zod.string().regex(getPublicSiteResponseSettingsThemeColorsGradientFromRegExp),
+  "gradientTo": zod.string().regex(getPublicSiteResponseSettingsThemeColorsGradientToRegExp)
+}).describe('Editable palette. Every value is a six digit hex colour, applied to the public site and the console.'),
+  "typography": zod.object({
+  "fontSans": zod.string().max(getPublicSiteResponseSettingsThemeTypographyFontSansMax),
+  "fontSerif": zod.string().max(getPublicSiteResponseSettingsThemeTypographyFontSerifMax),
+  "fontMono": zod.string().max(getPublicSiteResponseSettingsThemeTypographyFontMonoMax),
+  "fontSansAr": zod.string().max(getPublicSiteResponseSettingsThemeTypographyFontSansArMax),
+  "fontSerifAr": zod.string().max(getPublicSiteResponseSettingsThemeTypographyFontSerifArMax),
+  "fontMonoAr": zod.string().max(getPublicSiteResponseSettingsThemeTypographyFontMonoArMax),
+  "baseFontSize": zod.number().min(getPublicSiteResponseSettingsThemeTypographyBaseFontSizeMin).max(getPublicSiteResponseSettingsThemeTypographyBaseFontSizeMax),
+  "bodyLineHeight": zod.number().min(getPublicSiteResponseSettingsThemeTypographyBodyLineHeightMin).max(getPublicSiteResponseSettingsThemeTypographyBodyLineHeightMax),
+  "bodyLetterSpacing": zod.number().min(getPublicSiteResponseSettingsThemeTypographyBodyLetterSpacingMin).max(getPublicSiteResponseSettingsThemeTypographyBodyLetterSpacingMax),
+  "bodyWeight": zod.number().int().min(getPublicSiteResponseSettingsThemeTypographyBodyWeightMin).max(getPublicSiteResponseSettingsThemeTypographyBodyWeightMax),
+  "headingWeight": zod.number().int().min(getPublicSiteResponseSettingsThemeTypographyHeadingWeightMin).max(getPublicSiteResponseSettingsThemeTypographyHeadingWeightMax)
+}).describe('Editable type system. Font families are Google Fonts family names injected at runtime; the Arabic families apply whenever the site renders RTL.'),
+  "identity": zod.object({
+  "logoMark": zod.string().max(getPublicSiteResponseSettingsThemeIdentityLogoMarkMax),
+  "logoUrl": zod.string().max(getPublicSiteResponseSettingsThemeIdentityLogoUrlMax),
+  "faviconUrl": zod.string().max(getPublicSiteResponseSettingsThemeIdentityFaviconUrlMax),
+  "navWork": zod.string().max(getPublicSiteResponseSettingsThemeIdentityNavWorkMax),
+  "navWorkAr": zod.string().max(getPublicSiteResponseSettingsThemeIdentityNavWorkArMax),
+  "navAbout": zod.string().max(getPublicSiteResponseSettingsThemeIdentityNavAboutMax),
+  "navAboutAr": zod.string().max(getPublicSiteResponseSettingsThemeIdentityNavAboutArMax),
+  "privateConsole": zod.string().max(getPublicSiteResponseSettingsThemeIdentityPrivateConsoleMax),
+  "privateConsoleAr": zod.string().max(getPublicSiteResponseSettingsThemeIdentityPrivateConsoleArMax),
+  "ctaWork": zod.string().max(getPublicSiteResponseSettingsThemeIdentityCtaWorkMax),
+  "ctaWorkAr": zod.string().max(getPublicSiteResponseSettingsThemeIdentityCtaWorkArMax),
+  "sectionWorkTitle": zod.string().max(getPublicSiteResponseSettingsThemeIdentitySectionWorkTitleMax),
+  "sectionWorkTitleAr": zod.string().max(getPublicSiteResponseSettingsThemeIdentitySectionWorkTitleArMax)
+}).describe('Editable identity marks and wording. An empty logo URL keeps the typographic mark.')
+})
 }),
   "profile": zod.object({
   "name": zod.string(),
@@ -468,6 +587,78 @@ export const SetContentItemPublishedResponse = zod.object({
 /**
  * @summary Read editable site settings
  */
+export const getAdminSettingsResponseThemeColorsBackgroundRegExp = new RegExp('^#[0-9A-Fa-f]{6}$');
+export const getAdminSettingsResponseThemeColorsSurfaceRegExp = new RegExp('^#[0-9A-Fa-f]{6}$');
+export const getAdminSettingsResponseThemeColorsSurfaceAltRegExp = new RegExp('^#[0-9A-Fa-f]{6}$');
+export const getAdminSettingsResponseThemeColorsBorderRegExp = new RegExp('^#[0-9A-Fa-f]{6}$');
+export const getAdminSettingsResponseThemeColorsTextRegExp = new RegExp('^#[0-9A-Fa-f]{6}$');
+export const getAdminSettingsResponseThemeColorsHighlightRegExp = new RegExp('^#[0-9A-Fa-f]{6}$');
+export const getAdminSettingsResponseThemeColorsMutedTextRegExp = new RegExp('^#[0-9A-Fa-f]{6}$');
+export const getAdminSettingsResponseThemeColorsMutedSoftRegExp = new RegExp('^#[0-9A-Fa-f]{6}$');
+export const getAdminSettingsResponseThemeColorsMutedFaintRegExp = new RegExp('^#[0-9A-Fa-f]{6}$');
+export const getAdminSettingsResponseThemeColorsAccentRegExp = new RegExp('^#[0-9A-Fa-f]{6}$');
+export const getAdminSettingsResponseThemeColorsPrimaryRegExp = new RegExp('^#[0-9A-Fa-f]{6}$');
+export const getAdminSettingsResponseThemeColorsPrimaryHoverRegExp = new RegExp('^#[0-9A-Fa-f]{6}$');
+export const getAdminSettingsResponseThemeColorsSecondaryRegExp = new RegExp('^#[0-9A-Fa-f]{6}$');
+export const getAdminSettingsResponseThemeColorsFocusRingRegExp = new RegExp('^#[0-9A-Fa-f]{6}$');
+export const getAdminSettingsResponseThemeColorsGlassRegExp = new RegExp('^#[0-9A-Fa-f]{6}$');
+export const getAdminSettingsResponseThemeColorsGradientFromRegExp = new RegExp('^#[0-9A-Fa-f]{6}$');
+export const getAdminSettingsResponseThemeColorsGradientToRegExp = new RegExp('^#[0-9A-Fa-f]{6}$');
+export const getAdminSettingsResponseThemeTypographyFontSansMax = 80;
+
+export const getAdminSettingsResponseThemeTypographyFontSerifMax = 80;
+
+export const getAdminSettingsResponseThemeTypographyFontMonoMax = 80;
+
+export const getAdminSettingsResponseThemeTypographyFontSansArMax = 80;
+
+export const getAdminSettingsResponseThemeTypographyFontSerifArMax = 80;
+
+export const getAdminSettingsResponseThemeTypographyFontMonoArMax = 80;
+
+export const getAdminSettingsResponseThemeTypographyBaseFontSizeMin = 14;
+export const getAdminSettingsResponseThemeTypographyBaseFontSizeMax = 19;
+
+export const getAdminSettingsResponseThemeTypographyBodyLineHeightMin = 1.2;
+export const getAdminSettingsResponseThemeTypographyBodyLineHeightMax = 2.2;
+
+export const getAdminSettingsResponseThemeTypographyBodyLetterSpacingMin = -0.05;
+export const getAdminSettingsResponseThemeTypographyBodyLetterSpacingMax = 0.2;
+
+export const getAdminSettingsResponseThemeTypographyBodyWeightMin = 300;
+export const getAdminSettingsResponseThemeTypographyBodyWeightMax = 700;
+
+export const getAdminSettingsResponseThemeTypographyHeadingWeightMin = 300;
+export const getAdminSettingsResponseThemeTypographyHeadingWeightMax = 800;
+
+export const getAdminSettingsResponseThemeIdentityLogoMarkMax = 8;
+
+export const getAdminSettingsResponseThemeIdentityLogoUrlMax = 2048;
+
+export const getAdminSettingsResponseThemeIdentityFaviconUrlMax = 2048;
+
+export const getAdminSettingsResponseThemeIdentityNavWorkMax = 60;
+
+export const getAdminSettingsResponseThemeIdentityNavWorkArMax = 60;
+
+export const getAdminSettingsResponseThemeIdentityNavAboutMax = 60;
+
+export const getAdminSettingsResponseThemeIdentityNavAboutArMax = 60;
+
+export const getAdminSettingsResponseThemeIdentityPrivateConsoleMax = 60;
+
+export const getAdminSettingsResponseThemeIdentityPrivateConsoleArMax = 60;
+
+export const getAdminSettingsResponseThemeIdentityCtaWorkMax = 60;
+
+export const getAdminSettingsResponseThemeIdentityCtaWorkArMax = 60;
+
+export const getAdminSettingsResponseThemeIdentitySectionWorkTitleMax = 80;
+
+export const getAdminSettingsResponseThemeIdentitySectionWorkTitleArMax = 80;
+
+
+
 export const GetAdminSettingsResponse = zod.object({
   "projectName": zod.string(),
   "projectNameAr": zod.string(),
@@ -475,7 +666,56 @@ export const GetAdminSettingsResponse = zod.object({
   "taglineAr": zod.string(),
   "defaultLocale": zod.enum(['en', 'ar']),
   "accentColor": zod.string(),
-  "reducedMotion": zod.boolean()
+  "reducedMotion": zod.boolean(),
+  "theme": zod.object({
+  "colors": zod.object({
+  "background": zod.string().regex(getAdminSettingsResponseThemeColorsBackgroundRegExp),
+  "surface": zod.string().regex(getAdminSettingsResponseThemeColorsSurfaceRegExp),
+  "surfaceAlt": zod.string().regex(getAdminSettingsResponseThemeColorsSurfaceAltRegExp),
+  "border": zod.string().regex(getAdminSettingsResponseThemeColorsBorderRegExp),
+  "text": zod.string().regex(getAdminSettingsResponseThemeColorsTextRegExp),
+  "highlight": zod.string().regex(getAdminSettingsResponseThemeColorsHighlightRegExp),
+  "mutedText": zod.string().regex(getAdminSettingsResponseThemeColorsMutedTextRegExp),
+  "mutedSoft": zod.string().regex(getAdminSettingsResponseThemeColorsMutedSoftRegExp),
+  "mutedFaint": zod.string().regex(getAdminSettingsResponseThemeColorsMutedFaintRegExp),
+  "accent": zod.string().regex(getAdminSettingsResponseThemeColorsAccentRegExp),
+  "primary": zod.string().regex(getAdminSettingsResponseThemeColorsPrimaryRegExp),
+  "primaryHover": zod.string().regex(getAdminSettingsResponseThemeColorsPrimaryHoverRegExp),
+  "secondary": zod.string().regex(getAdminSettingsResponseThemeColorsSecondaryRegExp),
+  "focusRing": zod.string().regex(getAdminSettingsResponseThemeColorsFocusRingRegExp),
+  "glass": zod.string().regex(getAdminSettingsResponseThemeColorsGlassRegExp),
+  "gradientFrom": zod.string().regex(getAdminSettingsResponseThemeColorsGradientFromRegExp),
+  "gradientTo": zod.string().regex(getAdminSettingsResponseThemeColorsGradientToRegExp)
+}).describe('Editable palette. Every value is a six digit hex colour, applied to the public site and the console.'),
+  "typography": zod.object({
+  "fontSans": zod.string().max(getAdminSettingsResponseThemeTypographyFontSansMax),
+  "fontSerif": zod.string().max(getAdminSettingsResponseThemeTypographyFontSerifMax),
+  "fontMono": zod.string().max(getAdminSettingsResponseThemeTypographyFontMonoMax),
+  "fontSansAr": zod.string().max(getAdminSettingsResponseThemeTypographyFontSansArMax),
+  "fontSerifAr": zod.string().max(getAdminSettingsResponseThemeTypographyFontSerifArMax),
+  "fontMonoAr": zod.string().max(getAdminSettingsResponseThemeTypographyFontMonoArMax),
+  "baseFontSize": zod.number().min(getAdminSettingsResponseThemeTypographyBaseFontSizeMin).max(getAdminSettingsResponseThemeTypographyBaseFontSizeMax),
+  "bodyLineHeight": zod.number().min(getAdminSettingsResponseThemeTypographyBodyLineHeightMin).max(getAdminSettingsResponseThemeTypographyBodyLineHeightMax),
+  "bodyLetterSpacing": zod.number().min(getAdminSettingsResponseThemeTypographyBodyLetterSpacingMin).max(getAdminSettingsResponseThemeTypographyBodyLetterSpacingMax),
+  "bodyWeight": zod.number().int().min(getAdminSettingsResponseThemeTypographyBodyWeightMin).max(getAdminSettingsResponseThemeTypographyBodyWeightMax),
+  "headingWeight": zod.number().int().min(getAdminSettingsResponseThemeTypographyHeadingWeightMin).max(getAdminSettingsResponseThemeTypographyHeadingWeightMax)
+}).describe('Editable type system. Font families are Google Fonts family names injected at runtime; the Arabic families apply whenever the site renders RTL.'),
+  "identity": zod.object({
+  "logoMark": zod.string().max(getAdminSettingsResponseThemeIdentityLogoMarkMax),
+  "logoUrl": zod.string().max(getAdminSettingsResponseThemeIdentityLogoUrlMax),
+  "faviconUrl": zod.string().max(getAdminSettingsResponseThemeIdentityFaviconUrlMax),
+  "navWork": zod.string().max(getAdminSettingsResponseThemeIdentityNavWorkMax),
+  "navWorkAr": zod.string().max(getAdminSettingsResponseThemeIdentityNavWorkArMax),
+  "navAbout": zod.string().max(getAdminSettingsResponseThemeIdentityNavAboutMax),
+  "navAboutAr": zod.string().max(getAdminSettingsResponseThemeIdentityNavAboutArMax),
+  "privateConsole": zod.string().max(getAdminSettingsResponseThemeIdentityPrivateConsoleMax),
+  "privateConsoleAr": zod.string().max(getAdminSettingsResponseThemeIdentityPrivateConsoleArMax),
+  "ctaWork": zod.string().max(getAdminSettingsResponseThemeIdentityCtaWorkMax),
+  "ctaWorkAr": zod.string().max(getAdminSettingsResponseThemeIdentityCtaWorkArMax),
+  "sectionWorkTitle": zod.string().max(getAdminSettingsResponseThemeIdentitySectionWorkTitleMax),
+  "sectionWorkTitleAr": zod.string().max(getAdminSettingsResponseThemeIdentitySectionWorkTitleArMax)
+}).describe('Editable identity marks and wording. An empty logo URL keeps the typographic mark.')
+})
 })
 
 
@@ -491,6 +731,76 @@ export const updateAdminSettingsBodyTaglineMax = 300;
 export const updateAdminSettingsBodyTaglineArMax = 300;
 
 export const updateAdminSettingsBodyAccentColorRegExp = new RegExp('^#[0-9A-Fa-f]{6}$');
+export const updateAdminSettingsBodyThemeColorsBackgroundRegExp = new RegExp('^#[0-9A-Fa-f]{6}$');
+export const updateAdminSettingsBodyThemeColorsSurfaceRegExp = new RegExp('^#[0-9A-Fa-f]{6}$');
+export const updateAdminSettingsBodyThemeColorsSurfaceAltRegExp = new RegExp('^#[0-9A-Fa-f]{6}$');
+export const updateAdminSettingsBodyThemeColorsBorderRegExp = new RegExp('^#[0-9A-Fa-f]{6}$');
+export const updateAdminSettingsBodyThemeColorsTextRegExp = new RegExp('^#[0-9A-Fa-f]{6}$');
+export const updateAdminSettingsBodyThemeColorsHighlightRegExp = new RegExp('^#[0-9A-Fa-f]{6}$');
+export const updateAdminSettingsBodyThemeColorsMutedTextRegExp = new RegExp('^#[0-9A-Fa-f]{6}$');
+export const updateAdminSettingsBodyThemeColorsMutedSoftRegExp = new RegExp('^#[0-9A-Fa-f]{6}$');
+export const updateAdminSettingsBodyThemeColorsMutedFaintRegExp = new RegExp('^#[0-9A-Fa-f]{6}$');
+export const updateAdminSettingsBodyThemeColorsAccentRegExp = new RegExp('^#[0-9A-Fa-f]{6}$');
+export const updateAdminSettingsBodyThemeColorsPrimaryRegExp = new RegExp('^#[0-9A-Fa-f]{6}$');
+export const updateAdminSettingsBodyThemeColorsPrimaryHoverRegExp = new RegExp('^#[0-9A-Fa-f]{6}$');
+export const updateAdminSettingsBodyThemeColorsSecondaryRegExp = new RegExp('^#[0-9A-Fa-f]{6}$');
+export const updateAdminSettingsBodyThemeColorsFocusRingRegExp = new RegExp('^#[0-9A-Fa-f]{6}$');
+export const updateAdminSettingsBodyThemeColorsGlassRegExp = new RegExp('^#[0-9A-Fa-f]{6}$');
+export const updateAdminSettingsBodyThemeColorsGradientFromRegExp = new RegExp('^#[0-9A-Fa-f]{6}$');
+export const updateAdminSettingsBodyThemeColorsGradientToRegExp = new RegExp('^#[0-9A-Fa-f]{6}$');
+export const updateAdminSettingsBodyThemeTypographyFontSansMax = 80;
+
+export const updateAdminSettingsBodyThemeTypographyFontSerifMax = 80;
+
+export const updateAdminSettingsBodyThemeTypographyFontMonoMax = 80;
+
+export const updateAdminSettingsBodyThemeTypographyFontSansArMax = 80;
+
+export const updateAdminSettingsBodyThemeTypographyFontSerifArMax = 80;
+
+export const updateAdminSettingsBodyThemeTypographyFontMonoArMax = 80;
+
+export const updateAdminSettingsBodyThemeTypographyBaseFontSizeMin = 14;
+export const updateAdminSettingsBodyThemeTypographyBaseFontSizeMax = 19;
+
+export const updateAdminSettingsBodyThemeTypographyBodyLineHeightMin = 1.2;
+export const updateAdminSettingsBodyThemeTypographyBodyLineHeightMax = 2.2;
+
+export const updateAdminSettingsBodyThemeTypographyBodyLetterSpacingMin = -0.05;
+export const updateAdminSettingsBodyThemeTypographyBodyLetterSpacingMax = 0.2;
+
+export const updateAdminSettingsBodyThemeTypographyBodyWeightMin = 300;
+export const updateAdminSettingsBodyThemeTypographyBodyWeightMax = 700;
+
+export const updateAdminSettingsBodyThemeTypographyHeadingWeightMin = 300;
+export const updateAdminSettingsBodyThemeTypographyHeadingWeightMax = 800;
+
+export const updateAdminSettingsBodyThemeIdentityLogoMarkMax = 8;
+
+export const updateAdminSettingsBodyThemeIdentityLogoUrlMax = 2048;
+
+export const updateAdminSettingsBodyThemeIdentityFaviconUrlMax = 2048;
+
+export const updateAdminSettingsBodyThemeIdentityNavWorkMax = 60;
+
+export const updateAdminSettingsBodyThemeIdentityNavWorkArMax = 60;
+
+export const updateAdminSettingsBodyThemeIdentityNavAboutMax = 60;
+
+export const updateAdminSettingsBodyThemeIdentityNavAboutArMax = 60;
+
+export const updateAdminSettingsBodyThemeIdentityPrivateConsoleMax = 60;
+
+export const updateAdminSettingsBodyThemeIdentityPrivateConsoleArMax = 60;
+
+export const updateAdminSettingsBodyThemeIdentityCtaWorkMax = 60;
+
+export const updateAdminSettingsBodyThemeIdentityCtaWorkArMax = 60;
+
+export const updateAdminSettingsBodyThemeIdentitySectionWorkTitleMax = 80;
+
+export const updateAdminSettingsBodyThemeIdentitySectionWorkTitleArMax = 80;
+
 
 
 export const UpdateAdminSettingsBody = zod.object({
@@ -500,8 +810,129 @@ export const UpdateAdminSettingsBody = zod.object({
   "taglineAr": zod.string().max(updateAdminSettingsBodyTaglineArMax),
   "defaultLocale": zod.enum(['en', 'ar']),
   "accentColor": zod.string().regex(updateAdminSettingsBodyAccentColorRegExp),
-  "reducedMotion": zod.boolean()
+  "reducedMotion": zod.boolean(),
+  "theme": zod.object({
+  "colors": zod.object({
+  "background": zod.string().regex(updateAdminSettingsBodyThemeColorsBackgroundRegExp),
+  "surface": zod.string().regex(updateAdminSettingsBodyThemeColorsSurfaceRegExp),
+  "surfaceAlt": zod.string().regex(updateAdminSettingsBodyThemeColorsSurfaceAltRegExp),
+  "border": zod.string().regex(updateAdminSettingsBodyThemeColorsBorderRegExp),
+  "text": zod.string().regex(updateAdminSettingsBodyThemeColorsTextRegExp),
+  "highlight": zod.string().regex(updateAdminSettingsBodyThemeColorsHighlightRegExp),
+  "mutedText": zod.string().regex(updateAdminSettingsBodyThemeColorsMutedTextRegExp),
+  "mutedSoft": zod.string().regex(updateAdminSettingsBodyThemeColorsMutedSoftRegExp),
+  "mutedFaint": zod.string().regex(updateAdminSettingsBodyThemeColorsMutedFaintRegExp),
+  "accent": zod.string().regex(updateAdminSettingsBodyThemeColorsAccentRegExp),
+  "primary": zod.string().regex(updateAdminSettingsBodyThemeColorsPrimaryRegExp),
+  "primaryHover": zod.string().regex(updateAdminSettingsBodyThemeColorsPrimaryHoverRegExp),
+  "secondary": zod.string().regex(updateAdminSettingsBodyThemeColorsSecondaryRegExp),
+  "focusRing": zod.string().regex(updateAdminSettingsBodyThemeColorsFocusRingRegExp),
+  "glass": zod.string().regex(updateAdminSettingsBodyThemeColorsGlassRegExp),
+  "gradientFrom": zod.string().regex(updateAdminSettingsBodyThemeColorsGradientFromRegExp),
+  "gradientTo": zod.string().regex(updateAdminSettingsBodyThemeColorsGradientToRegExp)
+}).describe('Editable palette. Every value is a six digit hex colour, applied to the public site and the console.'),
+  "typography": zod.object({
+  "fontSans": zod.string().max(updateAdminSettingsBodyThemeTypographyFontSansMax),
+  "fontSerif": zod.string().max(updateAdminSettingsBodyThemeTypographyFontSerifMax),
+  "fontMono": zod.string().max(updateAdminSettingsBodyThemeTypographyFontMonoMax),
+  "fontSansAr": zod.string().max(updateAdminSettingsBodyThemeTypographyFontSansArMax),
+  "fontSerifAr": zod.string().max(updateAdminSettingsBodyThemeTypographyFontSerifArMax),
+  "fontMonoAr": zod.string().max(updateAdminSettingsBodyThemeTypographyFontMonoArMax),
+  "baseFontSize": zod.number().min(updateAdminSettingsBodyThemeTypographyBaseFontSizeMin).max(updateAdminSettingsBodyThemeTypographyBaseFontSizeMax),
+  "bodyLineHeight": zod.number().min(updateAdminSettingsBodyThemeTypographyBodyLineHeightMin).max(updateAdminSettingsBodyThemeTypographyBodyLineHeightMax),
+  "bodyLetterSpacing": zod.number().min(updateAdminSettingsBodyThemeTypographyBodyLetterSpacingMin).max(updateAdminSettingsBodyThemeTypographyBodyLetterSpacingMax),
+  "bodyWeight": zod.number().int().min(updateAdminSettingsBodyThemeTypographyBodyWeightMin).max(updateAdminSettingsBodyThemeTypographyBodyWeightMax),
+  "headingWeight": zod.number().int().min(updateAdminSettingsBodyThemeTypographyHeadingWeightMin).max(updateAdminSettingsBodyThemeTypographyHeadingWeightMax)
+}).describe('Editable type system. Font families are Google Fonts family names injected at runtime; the Arabic families apply whenever the site renders RTL.'),
+  "identity": zod.object({
+  "logoMark": zod.string().max(updateAdminSettingsBodyThemeIdentityLogoMarkMax),
+  "logoUrl": zod.string().max(updateAdminSettingsBodyThemeIdentityLogoUrlMax),
+  "faviconUrl": zod.string().max(updateAdminSettingsBodyThemeIdentityFaviconUrlMax),
+  "navWork": zod.string().max(updateAdminSettingsBodyThemeIdentityNavWorkMax),
+  "navWorkAr": zod.string().max(updateAdminSettingsBodyThemeIdentityNavWorkArMax),
+  "navAbout": zod.string().max(updateAdminSettingsBodyThemeIdentityNavAboutMax),
+  "navAboutAr": zod.string().max(updateAdminSettingsBodyThemeIdentityNavAboutArMax),
+  "privateConsole": zod.string().max(updateAdminSettingsBodyThemeIdentityPrivateConsoleMax),
+  "privateConsoleAr": zod.string().max(updateAdminSettingsBodyThemeIdentityPrivateConsoleArMax),
+  "ctaWork": zod.string().max(updateAdminSettingsBodyThemeIdentityCtaWorkMax),
+  "ctaWorkAr": zod.string().max(updateAdminSettingsBodyThemeIdentityCtaWorkArMax),
+  "sectionWorkTitle": zod.string().max(updateAdminSettingsBodyThemeIdentitySectionWorkTitleMax),
+  "sectionWorkTitleAr": zod.string().max(updateAdminSettingsBodyThemeIdentitySectionWorkTitleArMax)
+}).describe('Editable identity marks and wording. An empty logo URL keeps the typographic mark.')
 })
+})
+
+export const updateAdminSettingsResponseThemeColorsBackgroundRegExp = new RegExp('^#[0-9A-Fa-f]{6}$');
+export const updateAdminSettingsResponseThemeColorsSurfaceRegExp = new RegExp('^#[0-9A-Fa-f]{6}$');
+export const updateAdminSettingsResponseThemeColorsSurfaceAltRegExp = new RegExp('^#[0-9A-Fa-f]{6}$');
+export const updateAdminSettingsResponseThemeColorsBorderRegExp = new RegExp('^#[0-9A-Fa-f]{6}$');
+export const updateAdminSettingsResponseThemeColorsTextRegExp = new RegExp('^#[0-9A-Fa-f]{6}$');
+export const updateAdminSettingsResponseThemeColorsHighlightRegExp = new RegExp('^#[0-9A-Fa-f]{6}$');
+export const updateAdminSettingsResponseThemeColorsMutedTextRegExp = new RegExp('^#[0-9A-Fa-f]{6}$');
+export const updateAdminSettingsResponseThemeColorsMutedSoftRegExp = new RegExp('^#[0-9A-Fa-f]{6}$');
+export const updateAdminSettingsResponseThemeColorsMutedFaintRegExp = new RegExp('^#[0-9A-Fa-f]{6}$');
+export const updateAdminSettingsResponseThemeColorsAccentRegExp = new RegExp('^#[0-9A-Fa-f]{6}$');
+export const updateAdminSettingsResponseThemeColorsPrimaryRegExp = new RegExp('^#[0-9A-Fa-f]{6}$');
+export const updateAdminSettingsResponseThemeColorsPrimaryHoverRegExp = new RegExp('^#[0-9A-Fa-f]{6}$');
+export const updateAdminSettingsResponseThemeColorsSecondaryRegExp = new RegExp('^#[0-9A-Fa-f]{6}$');
+export const updateAdminSettingsResponseThemeColorsFocusRingRegExp = new RegExp('^#[0-9A-Fa-f]{6}$');
+export const updateAdminSettingsResponseThemeColorsGlassRegExp = new RegExp('^#[0-9A-Fa-f]{6}$');
+export const updateAdminSettingsResponseThemeColorsGradientFromRegExp = new RegExp('^#[0-9A-Fa-f]{6}$');
+export const updateAdminSettingsResponseThemeColorsGradientToRegExp = new RegExp('^#[0-9A-Fa-f]{6}$');
+export const updateAdminSettingsResponseThemeTypographyFontSansMax = 80;
+
+export const updateAdminSettingsResponseThemeTypographyFontSerifMax = 80;
+
+export const updateAdminSettingsResponseThemeTypographyFontMonoMax = 80;
+
+export const updateAdminSettingsResponseThemeTypographyFontSansArMax = 80;
+
+export const updateAdminSettingsResponseThemeTypographyFontSerifArMax = 80;
+
+export const updateAdminSettingsResponseThemeTypographyFontMonoArMax = 80;
+
+export const updateAdminSettingsResponseThemeTypographyBaseFontSizeMin = 14;
+export const updateAdminSettingsResponseThemeTypographyBaseFontSizeMax = 19;
+
+export const updateAdminSettingsResponseThemeTypographyBodyLineHeightMin = 1.2;
+export const updateAdminSettingsResponseThemeTypographyBodyLineHeightMax = 2.2;
+
+export const updateAdminSettingsResponseThemeTypographyBodyLetterSpacingMin = -0.05;
+export const updateAdminSettingsResponseThemeTypographyBodyLetterSpacingMax = 0.2;
+
+export const updateAdminSettingsResponseThemeTypographyBodyWeightMin = 300;
+export const updateAdminSettingsResponseThemeTypographyBodyWeightMax = 700;
+
+export const updateAdminSettingsResponseThemeTypographyHeadingWeightMin = 300;
+export const updateAdminSettingsResponseThemeTypographyHeadingWeightMax = 800;
+
+export const updateAdminSettingsResponseThemeIdentityLogoMarkMax = 8;
+
+export const updateAdminSettingsResponseThemeIdentityLogoUrlMax = 2048;
+
+export const updateAdminSettingsResponseThemeIdentityFaviconUrlMax = 2048;
+
+export const updateAdminSettingsResponseThemeIdentityNavWorkMax = 60;
+
+export const updateAdminSettingsResponseThemeIdentityNavWorkArMax = 60;
+
+export const updateAdminSettingsResponseThemeIdentityNavAboutMax = 60;
+
+export const updateAdminSettingsResponseThemeIdentityNavAboutArMax = 60;
+
+export const updateAdminSettingsResponseThemeIdentityPrivateConsoleMax = 60;
+
+export const updateAdminSettingsResponseThemeIdentityPrivateConsoleArMax = 60;
+
+export const updateAdminSettingsResponseThemeIdentityCtaWorkMax = 60;
+
+export const updateAdminSettingsResponseThemeIdentityCtaWorkArMax = 60;
+
+export const updateAdminSettingsResponseThemeIdentitySectionWorkTitleMax = 80;
+
+export const updateAdminSettingsResponseThemeIdentitySectionWorkTitleArMax = 80;
+
+
 
 export const UpdateAdminSettingsResponse = zod.object({
   "projectName": zod.string(),
@@ -510,7 +941,56 @@ export const UpdateAdminSettingsResponse = zod.object({
   "taglineAr": zod.string(),
   "defaultLocale": zod.enum(['en', 'ar']),
   "accentColor": zod.string(),
-  "reducedMotion": zod.boolean()
+  "reducedMotion": zod.boolean(),
+  "theme": zod.object({
+  "colors": zod.object({
+  "background": zod.string().regex(updateAdminSettingsResponseThemeColorsBackgroundRegExp),
+  "surface": zod.string().regex(updateAdminSettingsResponseThemeColorsSurfaceRegExp),
+  "surfaceAlt": zod.string().regex(updateAdminSettingsResponseThemeColorsSurfaceAltRegExp),
+  "border": zod.string().regex(updateAdminSettingsResponseThemeColorsBorderRegExp),
+  "text": zod.string().regex(updateAdminSettingsResponseThemeColorsTextRegExp),
+  "highlight": zod.string().regex(updateAdminSettingsResponseThemeColorsHighlightRegExp),
+  "mutedText": zod.string().regex(updateAdminSettingsResponseThemeColorsMutedTextRegExp),
+  "mutedSoft": zod.string().regex(updateAdminSettingsResponseThemeColorsMutedSoftRegExp),
+  "mutedFaint": zod.string().regex(updateAdminSettingsResponseThemeColorsMutedFaintRegExp),
+  "accent": zod.string().regex(updateAdminSettingsResponseThemeColorsAccentRegExp),
+  "primary": zod.string().regex(updateAdminSettingsResponseThemeColorsPrimaryRegExp),
+  "primaryHover": zod.string().regex(updateAdminSettingsResponseThemeColorsPrimaryHoverRegExp),
+  "secondary": zod.string().regex(updateAdminSettingsResponseThemeColorsSecondaryRegExp),
+  "focusRing": zod.string().regex(updateAdminSettingsResponseThemeColorsFocusRingRegExp),
+  "glass": zod.string().regex(updateAdminSettingsResponseThemeColorsGlassRegExp),
+  "gradientFrom": zod.string().regex(updateAdminSettingsResponseThemeColorsGradientFromRegExp),
+  "gradientTo": zod.string().regex(updateAdminSettingsResponseThemeColorsGradientToRegExp)
+}).describe('Editable palette. Every value is a six digit hex colour, applied to the public site and the console.'),
+  "typography": zod.object({
+  "fontSans": zod.string().max(updateAdminSettingsResponseThemeTypographyFontSansMax),
+  "fontSerif": zod.string().max(updateAdminSettingsResponseThemeTypographyFontSerifMax),
+  "fontMono": zod.string().max(updateAdminSettingsResponseThemeTypographyFontMonoMax),
+  "fontSansAr": zod.string().max(updateAdminSettingsResponseThemeTypographyFontSansArMax),
+  "fontSerifAr": zod.string().max(updateAdminSettingsResponseThemeTypographyFontSerifArMax),
+  "fontMonoAr": zod.string().max(updateAdminSettingsResponseThemeTypographyFontMonoArMax),
+  "baseFontSize": zod.number().min(updateAdminSettingsResponseThemeTypographyBaseFontSizeMin).max(updateAdminSettingsResponseThemeTypographyBaseFontSizeMax),
+  "bodyLineHeight": zod.number().min(updateAdminSettingsResponseThemeTypographyBodyLineHeightMin).max(updateAdminSettingsResponseThemeTypographyBodyLineHeightMax),
+  "bodyLetterSpacing": zod.number().min(updateAdminSettingsResponseThemeTypographyBodyLetterSpacingMin).max(updateAdminSettingsResponseThemeTypographyBodyLetterSpacingMax),
+  "bodyWeight": zod.number().int().min(updateAdminSettingsResponseThemeTypographyBodyWeightMin).max(updateAdminSettingsResponseThemeTypographyBodyWeightMax),
+  "headingWeight": zod.number().int().min(updateAdminSettingsResponseThemeTypographyHeadingWeightMin).max(updateAdminSettingsResponseThemeTypographyHeadingWeightMax)
+}).describe('Editable type system. Font families are Google Fonts family names injected at runtime; the Arabic families apply whenever the site renders RTL.'),
+  "identity": zod.object({
+  "logoMark": zod.string().max(updateAdminSettingsResponseThemeIdentityLogoMarkMax),
+  "logoUrl": zod.string().max(updateAdminSettingsResponseThemeIdentityLogoUrlMax),
+  "faviconUrl": zod.string().max(updateAdminSettingsResponseThemeIdentityFaviconUrlMax),
+  "navWork": zod.string().max(updateAdminSettingsResponseThemeIdentityNavWorkMax),
+  "navWorkAr": zod.string().max(updateAdminSettingsResponseThemeIdentityNavWorkArMax),
+  "navAbout": zod.string().max(updateAdminSettingsResponseThemeIdentityNavAboutMax),
+  "navAboutAr": zod.string().max(updateAdminSettingsResponseThemeIdentityNavAboutArMax),
+  "privateConsole": zod.string().max(updateAdminSettingsResponseThemeIdentityPrivateConsoleMax),
+  "privateConsoleAr": zod.string().max(updateAdminSettingsResponseThemeIdentityPrivateConsoleArMax),
+  "ctaWork": zod.string().max(updateAdminSettingsResponseThemeIdentityCtaWorkMax),
+  "ctaWorkAr": zod.string().max(updateAdminSettingsResponseThemeIdentityCtaWorkArMax),
+  "sectionWorkTitle": zod.string().max(updateAdminSettingsResponseThemeIdentitySectionWorkTitleMax),
+  "sectionWorkTitleAr": zod.string().max(updateAdminSettingsResponseThemeIdentitySectionWorkTitleArMax)
+}).describe('Editable identity marks and wording. An empty logo URL keeps the typographic mark.')
+})
 })
 
 
