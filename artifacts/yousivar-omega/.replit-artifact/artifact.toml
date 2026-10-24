@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "YOUSIVAR–Ω"
+description = "A secure bilingual command center for publishing projects, tools, Linux distributions, AI assistants, and developer profile content with owner-managed administration."
+version = "1.0.0"
+id = "artifacts/yousivar-omega"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 25341
+
+[services.development]
+run = "pnpm --filter @workspace/yousivar-omega run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/yousivar-omega", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/yousivar-omega/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "25341"
+BASE_PATH = "/"
