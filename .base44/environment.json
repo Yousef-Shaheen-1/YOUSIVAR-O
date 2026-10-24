@@ -6,14 +6,12 @@
     {
       "name": "CLERK_PUBLISHABLE_KEY",
       "description": "Clerk publishable key (pk_test_...) from a Clerk DEVELOPMENT instance. The server throws 'Missing Clerk Secret Key' for every request without the pair, so the API cannot serve anything.",
-      "requiredAtBoot": true,
-      "generatedForDevelopment": true
+      "requiredAtBoot": true
     },
     {
       "name": "CLERK_SECRET_KEY",
       "description": "Clerk secret key (sk_test_...) from the same development instance as the publishable key.",
-      "requiredAtBoot": true,
-      "generatedForDevelopment": true
+      "requiredAtBoot": true
     },
     {
       "name": "VITE_CLERK_PUBLISHABLE_KEY",
