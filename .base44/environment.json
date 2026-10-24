@@ -1,0 +1,29 @@
+{
+  "previewPort": 3000,
+  "healthPath": "/",
+  "startCommand": "docker compose -f docker-compose.base44.yml up -d",
+  "secrets": [
+    {
+      "name": "CLERK_PUBLISHABLE_KEY",
+      "description": "Clerk publishable key (pk_test_...) from a Clerk DEVELOPMENT instance. The server throws 'Missing Clerk Secret Key' for every request without the pair, so the API cannot serve anything.",
+      "requiredAtBoot": true,
+      "generatedForDevelopment": true
+    },
+    {
+      "name": "CLERK_SECRET_KEY",
+      "description": "Clerk secret key (sk_test_...) from the same development instance as the publishable key.",
+      "requiredAtBoot": true,
+      "generatedForDevelopment": true
+    },
+    {
+      "name": "VITE_CLERK_PUBLISHABLE_KEY",
+      "description": "The same pk_test_... publishable key, exposed to the browser. Without it the app derives a key from the preview hostname, which no Clerk instance knows, so Clerk JS fails to load and sign-in never becomes available.",
+      "requiredAtBoot": false
+    },
+    {
+      "name": "OWNER_EMAIL",
+      "description": "Verified primary email of the owner's Clerk account; only this account receives the OWNER role. No owner access exists until it is set.",
+      "requiredAtBoot": false
+    }
+  ]
+}

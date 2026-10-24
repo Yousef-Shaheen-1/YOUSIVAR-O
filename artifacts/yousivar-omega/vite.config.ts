@@ -27,6 +27,16 @@ if (!basePath) {
   );
 }
 
+// Base44 sandbox: the API runs as its own compose service while the browser
+// talks to relative `/api/...` paths (see lib/api-client-react) on a single
+// origin, so in preview mode the dev server proxies those requests to the API.
+// Only active when BASE44_PREVIEW_MODE is exactly "1"; otherwise the original
+// configuration is untouched.
+const previewApiOrigin =
+  process.env.BASE44_PREVIEW_MODE === '1'
+    ? process.env.API_PROXY_ORIGIN
+    : undefined;
+
 export default defineConfig({
   base: basePath,
   plugins: [
@@ -72,6 +82,19 @@ export default defineConfig({
     fs: {
       strict: true,
     },
+    ...(previewApiOrigin
+      ? {
+          proxy: {
+            '/api': {
+              target: previewApiOrigin,
+              // Keep the original Host header so the API's same-origin check
+              // still sees the client-facing host it expects.
+              changeOrigin: false,
+              ws: true,
+            },
+          },
+        }
+      : {}),
   },
   preview: {
     port,

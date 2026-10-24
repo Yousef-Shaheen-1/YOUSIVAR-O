@@ -1,0 +1,166 @@
+# Base44 sandbox environment for YOUSIVAR-OMEGA.
+#
+# Everything runs from the cloned source (bind mount + dev commands), so edits
+# are picked up without rebuilding an image. The web dev server owns host port
+# 3000 and proxies /api/* to the API service, which matches the app's
+# single-origin design (the generated browser client calls relative /api paths
+# and the API rejects cross-origin writes).
+#
+#   docker compose -f docker-compose.base44.yml up -d --build
+#
+name: yousivar-omega
+
+x-node-service: &node-service
+  image: node:22
+  working_dir: /app
+  volumes:
+    - ./:/app
+
+services:
+  db:
+    image: postgres:16
+    restart: on-failure
+    environment:
+      POSTGRES_USER: yousivar
+      POSTGRES_PASSWORD: yousivar
+      POSTGRES_DB: yousivar
+    volumes:
+      - yousivar-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U yousivar -d yousivar"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  # One-shot: installs the pnpm workspace into the bind-mounted source tree.
+  # Runs before the app services so only one installer ever touches
+  # node_modules. Re-run it after changing a manifest or the lockfile:
+  #   docker compose -f docker-compose.base44.yml run --rm deps
+  deps:
+    <<: *node-service
+    command:
+      - sh
+      - -ec
+      - >
+        corepack enable &&
+        corepack prepare pnpm@10 --activate >/dev/null &&
+        CI=true pnpm install --frozen-lockfile --store-dir /app/node_modules/.pnpm-store
+    environment:
+      CI: "true"
+    restart: "no"
+
+  # One-shot: applies the Drizzle schema to the development database.
+  db-push:
+    <<: *node-service
+    depends_on:
+      db:
+        condition: service_healthy
+      deps:
+        condition: service_completed_successfully
+    environment:
+      DATABASE_URL: postgres://yousivar:yousivar@db:5432/yousivar
+    command:
+      - sh
+      - -ec
+      - >
+        corepack enable &&
+        corepack prepare pnpm@10 --activate >/dev/null &&
+        pnpm --filter @workspace/db run push-force
+    restart: "no"
+
+  api:
+    <<: *node-service
+    depends_on:
+      db:
+        condition: service_healthy
+      db-push:
+        condition: service_completed_successfully
+    env_file:
+      # Placeholders first, platform secrets last so real values always win.
+      - ./.env.base44-defaults
+      - /run/base44/app.env
+    environment:
+      NODE_ENV: development
+      PORT: "8000"
+      DATABASE_URL: postgres://yousivar:yousivar@db:5432/yousivar
+      # The preview proxy hides the public host from this service, so the
+      # browser's own origin must be trusted explicitly for write requests
+      # (read only when BASE44_PREVIEW_MODE === '1'). Everything else stays
+      # rejected.
+      TRUSTED_ORIGIN_HOSTS: 3000-${BASE44_PUBLIC_HOST_SUFFIX}
+      BASE44_PREVIEW_MODE:
+    command:
+      - sh
+      - -ec
+      - >
+        corepack enable &&
+        corepack prepare pnpm@10 --activate >/dev/null &&
+        exec pnpm --filter @workspace/api-server run dev
+    ports:
+      # Exposed for direct API checks; the web dev server proxies to it
+      # internally at http://api:8000.
+      - "8000:8000"
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - "fetch('http://127.0.0.1:8000/api/healthz').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 40s
+    restart: on-failure
+    labels:
+      base44.project: "API Server"
+      base44.kind: api
+      base44.port: "8000"
+
+  web:
+    <<: *node-service
+    depends_on:
+      deps:
+        condition: service_completed_successfully
+      api:
+        condition: service_healthy
+    env_file:
+      - ./.env.base44-defaults
+      - /run/base44/app.env
+    environment:
+      PORT: "3000"
+      BASE_PATH: /
+      # Read only when BASE44_PREVIEW_MODE === '1' (see vite.config.ts).
+      API_PROXY_ORIGIN: http://api:8000
+      # VITE_CLERK_PROXY_URL is deliberately NOT set here: the app's Clerk
+      # Frontend API proxy only runs in production (see
+      # artifacts/api-server/src/middlewares/clerkProxyMiddleware.ts), so in
+      # this dev environment Clerk JS must load from the instance's own
+      # Frontend API instead of the /api/__clerk path.
+      BASE44_PREVIEW_MODE:
+    command:
+      - sh
+      - -ec
+      - >
+        corepack enable &&
+        corepack prepare pnpm@10 --activate >/dev/null &&
+        exec pnpm --filter @workspace/yousivar-omega run dev
+    ports:
+      - "3000:3000"
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - "fetch('http://127.0.0.1:3000/').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 20s
+    restart: on-failure
+    labels:
+      base44.project: "YOUSIVAR-OMEGA web"
+      base44.kind: web
+      base44.port: "3000"
+
+volumes:
+  yousivar-pgdata:
