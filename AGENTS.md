@@ -66,6 +66,13 @@ docker compose -f docker-compose.base44.yml up -d
   `/run/base44/app.env` in compose, so platform-provided secrets always win.
 - `scripts/post-merge.sh` filters a package named `db`; the real name is
   `@workspace/db`.
+- **`column "published" does not exist` in the `db` logs is not this app.**
+  Content rows carry `status` (`draft` | `published` | `archived`); the only
+  `published` in the codebase is the boolean on the publish request body
+  (`lib/api-spec/openapi.yaml`). No code path here issues
+  `select category,title,status,published from (select … from
+  yousivar_content_items) t` — that statement comes from an outside client
+  (one-off tooling), so do not add a `published` column to satisfy it.
 
 ## Android wrapper (`android/`)
 
