@@ -1,0 +1,35 @@
+# Cloudflare Pages static site configuration
+# These are meant to be copied into the Cloudflare dashboard or a Pages project
+# configuration. They are not secrets and are safe to keep in Git.
+
+# Preserve the browser-visible app origin while forwarding API traffic to a
+# same-origin proxy. Keep the backend host outside the static site and set the
+# same `Origin`/`Host` values to satisfy the Express same-origin veto.
+
+/*
+  This project expects the API to live behind the same origin at /api, proxied by
+  Cloudflare Pages Functions to the external Express endpoint configured via
+  API_PROXY_ORIGIN.
+  
+  Example:
+  - frontend host: https://app.example.com
+  - backend origin: https://api.example.com
+  - browser calls: https://app.example.com/api/...
+  - Pages function: proxy /api/* to https://api.example.com/api/*
+*/
+
+# Pages app build output directory
+pages_build_output_dir = "./dist/public"
+compatibility_date = "2025-07-01"
+compatibility_flags = ["nodejs_compat"]
+
+[vars]
+VITE_CLERK_PUBLISHABLE_KEY = ""
+VITE_CLERK_PROXY_URL = "/api/__clerk"
+VITE_API_BASE_URL = "/"
+API_PROXY_ORIGIN = "https://api.example.com"
+
+# NOTE: keep these values in Cloudflare dashboard secrets, not in repo files.
+# For the actual backend, set DATABASE_URL, CLERK_SECRET_KEY, OWNER_EMAIL,
+# OWNER_USERNAME, OWNER_PASSWORD or OWNER_PASSWORD_HASH, and the mail provider
+# variables in the API deployment environment.

@@ -5,42 +5,22 @@ import { defineConfig, type Plugin } from 'vite';
 
 import runtimeErrorOverlay from '@replit/vite-plugin-runtime-error-modal';
 
-const rawPort = process.env.PORT;
-
-if (!rawPort) {
-  throw new Error(
-    'PORT environment variable is required but was not provided.',
-  );
-}
-
+const rawPort = process.env.PORT ?? '4173';
 const port = Number(rawPort);
 
 if (Number.isNaN(port) || port <= 0) {
   throw new Error(`Invalid PORT value: "${rawPort}"`);
 }
 
-const basePath = process.env.BASE_PATH;
+const basePath = process.env.BASE_PATH ?? '/';
 
-if (!basePath) {
-  throw new Error(
-    'BASE_PATH environment variable is required but was not provided.',
-  );
-}
-
-// Base44 sandbox: the API runs as its own compose service while the browser
-// talks to relative `/api/...` paths (see lib/api-client-react) on a single
-// origin, so in preview mode the dev server proxies those requests to the API.
-// Only active when BASE44_PREVIEW_MODE is exactly "1"; otherwise the original
-// configuration is untouched.
+// Cloudflare Pages builds a static site without a Node host environment, so we
+// allow the production build to proceed with the default port/base path unless
+// explicit values are supplied. The app still expects the same-origin API route
+// at /api and will proxy it via the Cloudflare Pages function layer.
 const previewApiOrigin =
-  process.env.BASE44_PREVIEW_MODE === '1'
-    ? process.env.API_PROXY_ORIGIN
-    : undefined;
+  process.env.BASE44_PREVIEW_MODE === '1' ? process.env.API_PROXY_ORIGIN : undefined;
 
-// Android packages are served from this app (see the Android download section in
-// src/App.tsx). Without an explicit content type the static file handler sends an
-// empty one and some browsers and download managers refuse the file. A production
-// host needs the same mapping — see DEPLOYMENT.md.
 const apkContentType = 'application/vnd.android.package-archive';
 function apkMimeTypePlugin(): Plugin {
   const middleware = (
@@ -115,11 +95,7 @@ export default defineConfig({
           proxy: {
             '/api': {
               target: previewApiOrigin,
-              // Keep the original Host header so the API's same-origin check
-              // still sees the client-facing host it expects.
               changeOrigin: false,
-              // Forward the client address so the API can rate limit owner
-              // access attempts per visitor instead of per proxy.
               xfwd: true,
               ws: true,
             },

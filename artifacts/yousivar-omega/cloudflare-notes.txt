@@ -1,0 +1,15 @@
+# Cloudflare deployment notes
+#
+# Keep the production API behind the same origin at /api by using Cloudflare Pages
+# Functions to proxy requests to the external Express service configured via
+# API_PROXY_ORIGIN. Do not point the browser at a different host for the API or the
+# same-origin safety check in the Express app will reject safe writes.
+#
+# This repository does not run a native Express app inside Cloudflare Workers.
+# The unmodified Express service must remain in a Node-compatible environment (or
+# a Node-hosted runtime) that exposes the real API. Cloudflare Pages can be the
+# front door and proxy to that API while preserving the same origin.
+
+# The static frontend can be deployed to Cloudflare Pages with the build output
+# directory `artifacts/yousivar-omega/dist/public` but the API still requires a
+# backend target exposed at a real origin.
