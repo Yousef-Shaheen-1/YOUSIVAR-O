@@ -98,7 +98,10 @@ docker compose -f docker-compose.base44.yml up -d
   `artifacts/yousivar-omega/vite.config.ts` (the static handler otherwise sends an
   empty content type). Rebuilding changes the file, so update
   `DEFAULT_ANDROID_RELEASE` in `artifacts/api-server/src/lib/yousivar.ts` (size +
-  checksum) or edit it in the console → *Android release*.
+  checksum) or edit it in the console → *Android release*. A rebuild reproduces
+  the package **contents** (every entry identical), not the byte-exact file —
+  Gradle moves the archive's member order — so take the checksum from the
+  published build's `build.json`, not from a fresh rebuild of the same source.
 
 ## The Android release block in site settings
 

@@ -28,7 +28,7 @@ on:
     paths:
       - 'android/**'
       - 'artifacts/yousivar-omega/**'
-      - '.github/workflows/android.yml'
+      - '.github/workflows/android-apk.yml'
     tags: ['v*']
 
 permissions:
@@ -65,6 +65,13 @@ jobs:
 
       - name: Set up the Android SDK
         uses: android-actions/setup-android@9fc6c4e9069bf8d3d10b2204b1fb8f6ef7065407 # v3
+        with:
+          # This action installs `tools platform-tools` by default, but the
+          # legacy `tools` package no longer exists in the SDK repository, so the
+          # default fails the job with "Failed to find package 'tools'". Only
+          # platform-tools is needed here; the platform and build-tools the
+          # project targets are installed explicitly in the next step.
+          packages: 'platform-tools'
 
       - name: Install the SDK components the project targets
         run: sdkmanager "platform-tools" "platforms;android-36" "build-tools;36.0.0"
@@ -96,6 +103,25 @@ jobs:
             echo "::error::tag $GITHUB_REF_NAME does not match versionName $packaged in android/android/app/build.gradle"
             exit 1
           fi
+
+      # A release is distributed: a shell packaged without an origin would
+      # install and then only report "no application URL configured", which is
+      # exactly the placeholder APK_RELEASE.md forbids offering. A debug build is
+      # allowed without one — that is how the shell itself gets checked — but the
+      # run says so loudly instead of passing silently.
+      - name: Check that the shell has an application URL
+        env:
+          RELEASE_BUILD: ${{ startsWith(github.ref, 'refs/tags/v') || inputs.build_release }}
+        run: |
+          if [ -n "$YOUSIVAR_APP_URL" ]; then
+            echo "The packaged shell will load $YOUSIVAR_APP_URL"
+            exit 0
+          fi
+          if [ "$RELEASE_BUILD" = "true" ]; then
+            echo "::error::No application URL is configured, so this release would ship a shell that cannot load the site. Set the YOUSIVAR_APP_URL repository variable (or pass the app_url input) and run again — see APK_RELEASE.md."
+            exit 1
+          fi
+          echo "::warning::No YOUSIVAR_APP_URL is configured: this debug APK will show the bundled 'no application URL configured' screen. Set the YOUSIVAR_APP_URL repository variable to point it at the deployed site."
 
       - name: Build, validate and checksum the debug APK
         working-directory: android

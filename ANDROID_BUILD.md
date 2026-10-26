@@ -145,7 +145,7 @@ checks the same identity on a running device.
 
 ## Continuous integration
 
-[`.github/workflows/android.yml`](.github/workflows/android.yml) builds and
+[`.github/workflows/android-apk.yml`](.github/workflows/android-apk.yml) builds and
 validates both variants, uploads them as workflow artifacts, and publishes a
 signed release asset on a `v*` tag. Details and secret names:
 [`APK_RELEASE.md`](APK_RELEASE.md).
