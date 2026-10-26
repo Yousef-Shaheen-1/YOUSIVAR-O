@@ -23,8 +23,11 @@ What that proves: the toolchain builds an installable package, the artifact
 contains `AndroidManifest.xml` + `classes.dex` + the launcher resources, the
 package/version/permissions are the intended ones, the file is served by the
 website with the installer content type, and its checksum matches the one shown
-to visitors. Re-running the build reproduces the same checksum, so the published
-artifact is exactly what the pipeline in this repository produces.
+to visitors. Re-running the build reproduces the same package **contents** — every
+APK entry identical, down to the CRC — but Gradle does not keep the archive's
+member order stable between runs, so a fresh build can hash differently. Read the
+checksum from the `build.json` of the build you actually publish, and use the
+value of the file you publish: that is what visitors compare against.
 
 What it does **not** prove: the application was never installed or launched —
 no Android device or emulator exists in this environment. Nothing here is a
@@ -151,7 +154,9 @@ from their browser on the site.
    fail by design and only the debug APK is available.
 2. **A deployed web origin** — the shell needs `YOUSIVAR_APP_URL` pointing at the
    deployed site (see `DEPLOYMENT.md`). Without it, a build shows the bundled
-   "no application URL configured" screen.
+   "no application URL configured" screen — so a tagged (release) build **fails**
+   before it can publish such a placeholder, while a debug build builds it and
+   warns.
 3. **A host for the release APK** — GitHub Releases needs nothing extra; any other
    host must be reachable publicly.
 4. **Play Store distribution** (optional, not attempted here) — a Play Console
