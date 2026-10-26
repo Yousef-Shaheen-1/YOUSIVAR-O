@@ -5,7 +5,9 @@
  * YOUSIVAR–Ω public content, owner administration, and integration API.
  * OpenAPI spec version: 0.1.0
  */
+import type { AndroidReleaseUpdate } from './androidReleaseUpdate';
 import type { SiteSettingsUpdateDefaultLocale } from './siteSettingsUpdateDefaultLocale';
+import type { SiteThemeUpdate } from './siteThemeUpdate';
 
 export interface SiteSettingsUpdate {
   /**
@@ -26,4 +28,6 @@ export interface SiteSettingsUpdate {
   /** @pattern ^#[0-9A-Fa-f]{6}$ */
   accentColor: string;
   reducedMotion: boolean;
+  theme: SiteThemeUpdate;
+  android?: AndroidReleaseUpdate;
 }

@@ -2,6 +2,7 @@ import { clerkClient, getAuth } from "@clerk/express";
 import { eq } from "drizzle-orm";
 import type { NextFunction, Request, Response } from "express";
 import { db, applicationUsers } from "@workspace/db";
+import { resolveOwnerSessionIdentity } from "../lib/ownerAuth";
 
 export type AppRole =
   | "OWNER"
@@ -104,13 +105,27 @@ export function requirePermission(permission: string) {
     res: Response,
     next: NextFunction,
   ): Promise<void> => {
-    const { userId } = getAuth(req);
-    if (!userId) {
-      res.status(401).json({ error: "Authentication is required" });
-      return;
-    }
-
     try {
+      // The Ω owner session is checked first: it is only issued after password
+      // and email-code verification, so it carries the immutable OWNER role.
+      const ownerSession = await resolveOwnerSessionIdentity(req);
+      if (ownerSession) {
+        req.appIdentity = {
+          userId: ownerSession.userId,
+          email: ownerSession.email,
+          role: "OWNER",
+          permissions: OWNER_PERMISSIONS,
+        };
+        next();
+        return;
+      }
+
+      const { userId } = getAuth(req);
+      if (!userId) {
+        res.status(401).json({ error: "Authentication is required" });
+        return;
+      }
+
       const identity = await resolveAppIdentity(userId);
       req.appIdentity = identity;
       if (identity.role === "PUBLIC" || !identity.permissions.includes(permission)) {
@@ -119,7 +134,7 @@ export function requirePermission(permission: string) {
       }
       next();
     } catch (error) {
-      req.log.error({ err: error, userId }, "Unable to resolve application identity");
+      req.log.error({ err: error }, "Unable to resolve application identity");
       res.status(503).json({ error: "Unable to verify application permissions" });
     }
   };

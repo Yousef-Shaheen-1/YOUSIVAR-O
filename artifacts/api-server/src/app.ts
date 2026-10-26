@@ -11,6 +11,26 @@ import {
   getClerkProxyHost,
 } from "./middlewares/clerkProxyMiddleware";
 
+/**
+ * Extra client-facing origin hosts trusted for the same-origin write check
+ * below, comma separated.
+ *
+ * The Base44 preview proxy terminates TLS, so the browser sends its public
+ * origin in `Origin` while this service only ever sees the internal host in
+ * `Host`. Trusting the configured preview origin keeps the check meaningful
+ * (every other origin is still rejected) without disabling it.
+ *
+ * Only honoured when BASE44_PREVIEW_MODE is exactly "1"; unset or any other
+ * value keeps the original same-origin-only behaviour.
+ */
+const previewOriginHosts =
+  process.env.BASE44_PREVIEW_MODE === "1"
+    ? (process.env.TRUSTED_ORIGIN_HOSTS ?? "")
+        .split(",")
+        .map((entry) => entry.trim().toLowerCase())
+        .filter((entry) => entry.length > 0)
+    : [];
+
 const app: Express = express();
 
 app.disable("x-powered-by");
@@ -60,7 +80,13 @@ app.use((req, res, next) => {
   } catch {
     originHost = "";
   }
-  if (!originHost || !host || originHost !== host.toLowerCase() || fetchSite === "cross-site") {
+  const isSameOrigin = originHost !== "" && originHost === host?.toLowerCase();
+  if (
+    !originHost ||
+    !host ||
+    (!isSameOrigin && !previewOriginHosts.includes(originHost)) ||
+    fetchSite === "cross-site"
+  ) {
     res.status(403).json({ error: "Cross-origin request rejected" });
     return;
   }

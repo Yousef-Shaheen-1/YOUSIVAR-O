@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#101214" />
+    <title>YOUSIVAR–Ω</title>
+    <style>
+      /* Self-contained on purpose: this screen has to render with no network,
+         no fonts and no remote assets, because it is what the shell shows when
+         the application URL is unreachable (or was never configured). */
+      :root { color-scheme: dark; }
+      * { box-sizing: border-box; }
+      html, body { height: 100%; margin: 0; }
+      body {
+        display: grid;
+        place-items: center;
+        padding: calc(24px + env(safe-area-inset-top)) 20px calc(24px + env(safe-area-inset-bottom));
+        background: #101214;
+        color: #e9e7e0;
+        font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      }
+      main { width: min(560px, 100%); text-align: center; }
+      .mark {
+        width: 72px; height: 72px; margin: 0 auto 28px;
+        display: grid; place-items: center;
+        border: 1px solid #2b2e30; border-radius: 22px;
+        background: radial-gradient(ellipse at 50% 35%, #434546, #131517 62%);
+        font: 400 34px/1 Georgia, "Times New Roman", serif; color: #e9e7e0;
+      }
+      h1 { font-size: 26px; font-weight: 400; letter-spacing: -0.01em; margin: 0 0 14px; }
+      p { margin: 0 0 14px; color: #a1a2a1; font-size: 15px; line-height: 1.7; }
+      p[dir="rtl"] { direction: rtl; }
+      button {
+        margin-top: 18px; min-height: 48px; padding: 0 30px;
+        border: 1px solid #2b2e30; border-radius: 999px;
+        background: #c6beac; color: #101214;
+        font-size: 15px; font-weight: 600;
+      }
+      button:active { background: #ded7c6; }
+      .note { margin-top: 30px; color: #52525b; font-size: 12px; line-height: 1.6; }
+      code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; color: #a1a2a1; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <div class="mark">Ω</div>
+      <h1>YOUSIVAR–Ω</h1>
+      <p id="lead">The application could not reach the site. Check your connection and try again.</p>
+      <p dir="rtl" lang="ar">تعذّر على التطبيق الوصول إلى الموقع. تحقّق من الاتصال ثم أعد المحاولة.</p>
+      <button type="button" onclick="location.reload()">Retry · إعادة المحاولة</button>
+      <p class="note">If this build was packaged without an application URL, rebuild it with <code>YOUSIVAR_APP_URL</code> pointing at the deployed site — see ANDROID_BUILD.md.</p>
+    </main>
+  </body>
+</html>

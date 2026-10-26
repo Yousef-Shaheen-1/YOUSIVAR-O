@@ -192,6 +192,127 @@ export interface PublishContentInput {
   published: boolean;
 }
 
+/**
+ * Editable palette. Every value is a six digit hex colour, applied to the public site and the console.
+ */
+export interface ThemeColors {
+  /** @pattern ^#[0-9A-Fa-f]{6}$ */
+  background: string;
+  /** @pattern ^#[0-9A-Fa-f]{6}$ */
+  surface: string;
+  /** @pattern ^#[0-9A-Fa-f]{6}$ */
+  surfaceAlt: string;
+  /** @pattern ^#[0-9A-Fa-f]{6}$ */
+  border: string;
+  /** @pattern ^#[0-9A-Fa-f]{6}$ */
+  text: string;
+  /** @pattern ^#[0-9A-Fa-f]{6}$ */
+  highlight: string;
+  /** @pattern ^#[0-9A-Fa-f]{6}$ */
+  mutedText: string;
+  /** @pattern ^#[0-9A-Fa-f]{6}$ */
+  mutedSoft: string;
+  /** @pattern ^#[0-9A-Fa-f]{6}$ */
+  mutedFaint: string;
+  /** @pattern ^#[0-9A-Fa-f]{6}$ */
+  accent: string;
+  /** @pattern ^#[0-9A-Fa-f]{6}$ */
+  primary: string;
+  /** @pattern ^#[0-9A-Fa-f]{6}$ */
+  primaryHover: string;
+  /** @pattern ^#[0-9A-Fa-f]{6}$ */
+  secondary: string;
+  /** @pattern ^#[0-9A-Fa-f]{6}$ */
+  focusRing: string;
+  /** @pattern ^#[0-9A-Fa-f]{6}$ */
+  glass: string;
+  /** @pattern ^#[0-9A-Fa-f]{6}$ */
+  gradientFrom: string;
+  /** @pattern ^#[0-9A-Fa-f]{6}$ */
+  gradientTo: string;
+}
+
+/**
+ * Editable type system. Font families are Google Fonts family names injected at runtime; the Arabic families apply whenever the site renders RTL.
+ */
+export interface ThemeTypography {
+  /** @maxLength 80 */
+  fontSans: string;
+  /** @maxLength 80 */
+  fontSerif: string;
+  /** @maxLength 80 */
+  fontMono: string;
+  /** @maxLength 80 */
+  fontSansAr: string;
+  /** @maxLength 80 */
+  fontSerifAr: string;
+  /** @maxLength 80 */
+  fontMonoAr: string;
+  /**
+     * @minimum 14
+     * @maximum 19
+     */
+  baseFontSize: number;
+  /**
+     * @minimum 1.2
+     * @maximum 2.2
+     */
+  bodyLineHeight: number;
+  /**
+     * @minimum -0.05
+     * @maximum 0.2
+     */
+  bodyLetterSpacing: number;
+  /**
+     * @minimum 300
+     * @maximum 700
+     */
+  bodyWeight: number;
+  /**
+     * @minimum 300
+     * @maximum 800
+     */
+  headingWeight: number;
+}
+
+/**
+ * Editable identity marks and wording. An empty logo URL keeps the typographic mark.
+ */
+export interface ThemeIdentity {
+  /** @maxLength 8 */
+  logoMark: string;
+  /** @maxLength 2048 */
+  logoUrl: string;
+  /** @maxLength 2048 */
+  faviconUrl: string;
+  /** @maxLength 60 */
+  navWork: string;
+  /** @maxLength 60 */
+  navWorkAr: string;
+  /** @maxLength 60 */
+  navAbout: string;
+  /** @maxLength 60 */
+  navAboutAr: string;
+  /** @maxLength 60 */
+  privateConsole: string;
+  /** @maxLength 60 */
+  privateConsoleAr: string;
+  /** @maxLength 60 */
+  ctaWork: string;
+  /** @maxLength 60 */
+  ctaWorkAr: string;
+  /** @maxLength 80 */
+  sectionWorkTitle: string;
+  /** @maxLength 80 */
+  sectionWorkTitleAr: string;
+}
+
+export interface SiteTheme {
+  colors: ThemeColors;
+  typography: ThemeTypography;
+  identity: ThemeIdentity;
+}
+
 export type SiteSettingsDefaultLocale = typeof SiteSettingsDefaultLocale[keyof typeof SiteSettingsDefaultLocale];
 
 
@@ -199,6 +320,24 @@ export const SiteSettingsDefaultLocale = {
   en: 'en',
   ar: 'ar',
 } as const;
+
+/**
+ * The published Android release. `apkUrl` stays empty until a real APK artifact exists, and the public download block is rendered only when `downloadEnabled` is true and `apkUrl` points at an APK file — never at a placeholder, a source archive or an HTML page.
+ */
+export interface AndroidRelease {
+  versionName: string;
+  versionCode: number;
+  /** @nullable */
+  releasedAt: string | null;
+  downloadEnabled: boolean;
+  apkUrl: string;
+  apkSizeBytes: number;
+  checksumSha256: string;
+  minAndroid: string;
+  releaseNotes: string;
+  releaseNotesAr: string;
+  debugBuild: boolean;
+}
 
 export interface SiteSettings {
   projectName: string;
@@ -208,6 +347,40 @@ export interface SiteSettings {
   defaultLocale: SiteSettingsDefaultLocale;
   accentColor: string;
   reducedMotion: boolean;
+  theme: SiteTheme;
+  android: AndroidRelease;
+}
+
+export interface AndroidReleaseUpdate {
+  /** @maxLength 40 */
+  versionName?: string;
+  /**
+     * @minimum 1
+     * @maximum 2147483647
+     */
+  versionCode?: number;
+  /**
+     * @maxLength 40
+     * @nullable
+     */
+  releasedAt?: string | null;
+  downloadEnabled?: boolean;
+  /** @maxLength 2048 */
+  apkUrl?: string;
+  /**
+     * @minimum 0
+     * @maximum 2147483647
+     */
+  apkSizeBytes?: number;
+  /** @maxLength 64 */
+  checksumSha256?: string;
+  /** @maxLength 60 */
+  minAndroid?: string;
+  /** @maxLength 4000 */
+  releaseNotes?: string;
+  /** @maxLength 4000 */
+  releaseNotesAr?: string;
+  debugBuild?: boolean;
 }
 
 export type SiteSettingsUpdateDefaultLocale = typeof SiteSettingsUpdateDefaultLocale[keyof typeof SiteSettingsUpdateDefaultLocale];
@@ -217,6 +390,12 @@ export const SiteSettingsUpdateDefaultLocale = {
   en: 'en',
   ar: 'ar',
 } as const;
+
+export interface SiteThemeUpdate {
+  colors: ThemeColors;
+  typography: ThemeTypography;
+  identity: ThemeIdentity;
+}
 
 export interface SiteSettingsUpdate {
   /**
@@ -237,6 +416,8 @@ export interface SiteSettingsUpdate {
   /** @pattern ^#[0-9A-Fa-f]{6}$ */
   accentColor: string;
   reducedMotion: boolean;
+  theme: SiteThemeUpdate;
+  android?: AndroidReleaseUpdate;
 }
 
 export interface SocialLink {

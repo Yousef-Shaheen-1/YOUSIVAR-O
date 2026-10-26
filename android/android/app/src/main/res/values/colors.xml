@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Obsidian palette for the YOUSIVAR–Ω identity (see README.md § design).
+  The shell draws only these colours: window background, system bars and the
+  splash, so the native chrome never flashes a light theme.
+-->
+<resources>
+    <color name="omega_obsidian">#101214</color>
+    <color name="omega_charcoal">#191B1D</color>
+    <color name="omega_silver">#D9D9D9</color>
+    <color name="omega_accent">#C6BEAC</color>
+
+    <color name="colorPrimary">#191B1D</color>
+    <color name="colorPrimaryDark">#101214</color>
+    <color name="colorAccent">#C6BEAC</color>
+    <color name="omegaStatusBar">#101214</color>
+    <color name="omegaNavigationBar">#101214</color>
+</resources>
