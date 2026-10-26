@@ -908,7 +908,7 @@ components:
         identity: { $ref: "#/components/schemas/ThemeIdentity" }
     SiteSettings:
       type: object
-      required: [projectName, projectNameAr, tagline, taglineAr, defaultLocale, accentColor, reducedMotion, theme]
+      required: [projectName, projectNameAr, tagline, taglineAr, defaultLocale, accentColor, reducedMotion, theme, android]
       properties:
         projectName:
           type: string
@@ -927,6 +927,75 @@ components:
           type: boolean
         theme:
           $ref: "#/components/schemas/SiteTheme"
+        android:
+          $ref: "#/components/schemas/AndroidRelease"
+    AndroidRelease:
+      description: >
+        The published Android release. `apkUrl` stays empty until a real APK
+        artifact exists, and the public download block is rendered only when
+        `downloadEnabled` is true and `apkUrl` points at an APK file — never at
+        a placeholder, a source archive or an HTML page.
+      type: object
+      required: [versionName, versionCode, releasedAt, downloadEnabled, apkUrl, apkSizeBytes, checksumSha256, minAndroid, releaseNotes, releaseNotesAr, debugBuild]
+      properties:
+        versionName:
+          type: string
+        versionCode:
+          type: integer
+        releasedAt:
+          type: ["string", "null"]
+        downloadEnabled:
+          type: boolean
+        apkUrl:
+          type: string
+        apkSizeBytes:
+          type: integer
+        checksumSha256:
+          type: string
+        minAndroid:
+          type: string
+        releaseNotes:
+          type: string
+        releaseNotesAr:
+          type: string
+        debugBuild:
+          type: boolean
+    AndroidReleaseUpdate:
+      type: object
+      properties:
+        versionName:
+          type: string
+          maxLength: 40
+        versionCode:
+          type: integer
+          minimum: 1
+          maximum: 2147483647
+        releasedAt:
+          type: ["string", "null"]
+          maxLength: 40
+        downloadEnabled:
+          type: boolean
+        apkUrl:
+          type: string
+          maxLength: 2048
+        apkSizeBytes:
+          type: integer
+          minimum: 0
+          maximum: 2147483647
+        checksumSha256:
+          type: string
+          maxLength: 64
+        minAndroid:
+          type: string
+          maxLength: 60
+        releaseNotes:
+          type: string
+          maxLength: 4000
+        releaseNotesAr:
+          type: string
+          maxLength: 4000
+        debugBuild:
+          type: boolean
     SiteSettingsUpdate:
       type: object
       required: [projectName, projectNameAr, tagline, taglineAr, defaultLocale, accentColor, reducedMotion, theme]
@@ -955,6 +1024,8 @@ components:
           type: boolean
         theme:
           $ref: "#/components/schemas/SiteThemeUpdate"
+        android:
+          $ref: "#/components/schemas/AndroidReleaseUpdate"
     SiteThemeUpdate:
       type: object
       required: [colors, typography, identity]

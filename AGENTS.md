@@ -67,6 +67,48 @@ docker compose -f docker-compose.base44.yml up -d
 - `scripts/post-merge.sh` filters a package named `db`; the real name is
   `@workspace/db`.
 
+## Android wrapper (`android/`)
+
+- `android/` is a **separate npm project on purpose** — it is *not* in the pnpm
+  workspace (`artifacts/*`, `lib/*`). Adding it under `artifacts/` would make the
+  one-shot `deps` installer fail on `--frozen-lockfile`. Its dependencies are
+  installed from its own committed `package-lock.json` (`cd android && npm install`).
+- The Capacitor project root is `android/`; the Gradle project Capacitor generates
+  lives at `android/android/`. `android/www/index.html` is the bundled offline /
+  "no application URL configured" screen (`server.errorPath`), never a copy of the
+  site. `YOUSIVAR_APP_URL` switches the shell to loading the deployed origin.
+- The Android toolchain (JDK 21 + Android SDK 36) is **not** a compose service: it
+  would bloat the preview stack. Build in a throwaway container — the full recipe
+  is in `ANDROID_BUILD.md`. `android/android/local.properties` (git-ignored) holds
+  `sdk.dir`; `ANDROID_SDK_ROOT`/`JAVA_HOME` are set per command.
+- `cd android && npm run build:debug` syncs, builds, validates the artifact and
+  writes `android/dist/debug/…` (APK + `.sha256` + `build.json`). A release build
+  without signing credentials fails on purpose.
+- The build offered on the public site is committed at
+  `artifacts/yousivar-omega/public/downloads/yousivar-omega-android.apk` and served
+  by the web dev server. `.apk` responses need
+  `application/vnd.android.package-archive`: that is set by a tiny Vite plugin in
+  `artifacts/yousivar-omega/vite.config.ts` (the static handler otherwise sends an
+  empty content type). Rebuilding changes the file, so update
+  `DEFAULT_ANDROID_RELEASE` in `artifacts/api-server/src/lib/yousivar.ts` (size +
+  checksum) or edit it in the console → *Android release*.
+
+## The Android release block in site settings
+
+- It lives on the existing `site-settings` record (`android`), so no new endpoint
+  and no migration: `GET /api/site` exposes it publicly, `PUT /api/admin/settings`
+  (permission `settings:write`) writes it.
+- On write the API **validates**: the download must be empty, an https URL or a
+  same-site path, and must end in `.apk`; the checksum must be 64 hex characters.
+  `android` is optional on write, so an older console cannot erase a published
+  release — the stored value is the fallback.
+- The public download section renders a button only when `downloadEnabled` is true
+  **and** `apkUrl` is a real `.apk`; otherwise it states plainly that no release is
+  published yet. Never make it link to a placeholder.
+- `readSiteSettings()` merges defaults, so a settings row written before this
+  field existed still gets the shipped release record. Restart the API after
+  editing `lib/yousivar.ts` (no watcher).
+
 ## Owner access (the Ω flow)
 
 Clicking the Ω mark in the public header opens the owner sign-in modal
@@ -112,6 +154,13 @@ curl -s http://localhost:3000/api/healthz          # {"status":"ok"}
 curl -s http://localhost:3000/api/site             # public settings + profile
 curl -s -o /dev/null -w '%{http_code}\n' http://localhost:3000/api/admin/summary
 # must be 401 — never 403 (origin guard) and never 500 (missing Clerk key)
+```
+
+```sh
+# The Android download must be the real artifact, byte for byte:
+curl -sI http://localhost:3000/downloads/yousivar-omega-android.apk   # 200 + Content-Length
+curl -s  http://localhost:3000/downloads/yousivar-omega-android.apk -o /tmp/a.apk && sha256sum /tmp/a.apk
+# and the served file must keep Content-Type: application/vnd.android.package-archive
 ```
 
 - Types: `pnpm run typecheck` (workspace-wide, passes).

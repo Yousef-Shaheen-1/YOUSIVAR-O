@@ -321,6 +321,24 @@ export const SiteSettingsDefaultLocale = {
   ar: 'ar',
 } as const;
 
+/**
+ * The published Android release. `apkUrl` stays empty until a real APK artifact exists, and the public download block is rendered only when `downloadEnabled` is true and `apkUrl` points at an APK file — never at a placeholder, a source archive or an HTML page.
+ */
+export interface AndroidRelease {
+  versionName: string;
+  versionCode: number;
+  /** @nullable */
+  releasedAt: string | null;
+  downloadEnabled: boolean;
+  apkUrl: string;
+  apkSizeBytes: number;
+  checksumSha256: string;
+  minAndroid: string;
+  releaseNotes: string;
+  releaseNotesAr: string;
+  debugBuild: boolean;
+}
+
 export interface SiteSettings {
   projectName: string;
   projectNameAr: string;
@@ -330,6 +348,39 @@ export interface SiteSettings {
   accentColor: string;
   reducedMotion: boolean;
   theme: SiteTheme;
+  android: AndroidRelease;
+}
+
+export interface AndroidReleaseUpdate {
+  /** @maxLength 40 */
+  versionName?: string;
+  /**
+     * @minimum 1
+     * @maximum 2147483647
+     */
+  versionCode?: number;
+  /**
+     * @maxLength 40
+     * @nullable
+     */
+  releasedAt?: string | null;
+  downloadEnabled?: boolean;
+  /** @maxLength 2048 */
+  apkUrl?: string;
+  /**
+     * @minimum 0
+     * @maximum 2147483647
+     */
+  apkSizeBytes?: number;
+  /** @maxLength 64 */
+  checksumSha256?: string;
+  /** @maxLength 60 */
+  minAndroid?: string;
+  /** @maxLength 4000 */
+  releaseNotes?: string;
+  /** @maxLength 4000 */
+  releaseNotesAr?: string;
+  debugBuild?: boolean;
 }
 
 export type SiteSettingsUpdateDefaultLocale = typeof SiteSettingsUpdateDefaultLocale[keyof typeof SiteSettingsUpdateDefaultLocale];
@@ -366,6 +417,7 @@ export interface SiteSettingsUpdate {
   accentColor: string;
   reducedMotion: boolean;
   theme: SiteThemeUpdate;
+  android?: AndroidReleaseUpdate;
 }
 
 export interface SocialLink {

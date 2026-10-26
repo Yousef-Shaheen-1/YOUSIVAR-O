@@ -153,7 +153,20 @@ export const GetPublicSiteResponse = zod.object({
   "sectionWorkTitle": zod.string().max(getPublicSiteResponseSettingsThemeIdentitySectionWorkTitleMax),
   "sectionWorkTitleAr": zod.string().max(getPublicSiteResponseSettingsThemeIdentitySectionWorkTitleArMax)
 }).describe('Editable identity marks and wording. An empty logo URL keeps the typographic mark.')
-})
+}),
+  "android": zod.object({
+  "versionName": zod.string(),
+  "versionCode": zod.number().int(),
+  "releasedAt": zod.string().nullable(),
+  "downloadEnabled": zod.boolean(),
+  "apkUrl": zod.string(),
+  "apkSizeBytes": zod.number().int(),
+  "checksumSha256": zod.string(),
+  "minAndroid": zod.string(),
+  "releaseNotes": zod.string(),
+  "releaseNotesAr": zod.string(),
+  "debugBuild": zod.boolean()
+}).describe('The published Android release. `apkUrl` stays empty until a real APK artifact exists, and the public download block is rendered only when `downloadEnabled` is true and `apkUrl` points at an APK file — never at a placeholder, a source archive or an HTML page.\n')
 }),
   "profile": zod.object({
   "name": zod.string(),
@@ -715,7 +728,20 @@ export const GetAdminSettingsResponse = zod.object({
   "sectionWorkTitle": zod.string().max(getAdminSettingsResponseThemeIdentitySectionWorkTitleMax),
   "sectionWorkTitleAr": zod.string().max(getAdminSettingsResponseThemeIdentitySectionWorkTitleArMax)
 }).describe('Editable identity marks and wording. An empty logo URL keeps the typographic mark.')
-})
+}),
+  "android": zod.object({
+  "versionName": zod.string(),
+  "versionCode": zod.number().int(),
+  "releasedAt": zod.string().nullable(),
+  "downloadEnabled": zod.boolean(),
+  "apkUrl": zod.string(),
+  "apkSizeBytes": zod.number().int(),
+  "checksumSha256": zod.string(),
+  "minAndroid": zod.string(),
+  "releaseNotes": zod.string(),
+  "releaseNotesAr": zod.string(),
+  "debugBuild": zod.boolean()
+}).describe('The published Android release. `apkUrl` stays empty until a real APK artifact exists, and the public download block is rendered only when `downloadEnabled` is true and `apkUrl` points at an APK file — never at a placeholder, a source archive or an HTML page.\n')
 })
 
 
@@ -801,6 +827,25 @@ export const updateAdminSettingsBodyThemeIdentitySectionWorkTitleMax = 80;
 
 export const updateAdminSettingsBodyThemeIdentitySectionWorkTitleArMax = 80;
 
+export const updateAdminSettingsBodyAndroidVersionNameMax = 40;
+
+export const updateAdminSettingsBodyAndroidVersionCodeMax = 2147483647;
+
+export const updateAdminSettingsBodyAndroidReleasedAtMax = 40;
+
+export const updateAdminSettingsBodyAndroidApkUrlMax = 2048;
+
+export const updateAdminSettingsBodyAndroidApkSizeBytesMin = 0;
+export const updateAdminSettingsBodyAndroidApkSizeBytesMax = 2147483647;
+
+export const updateAdminSettingsBodyAndroidChecksumSha256Max = 64;
+
+export const updateAdminSettingsBodyAndroidMinAndroidMax = 60;
+
+export const updateAdminSettingsBodyAndroidReleaseNotesMax = 4000;
+
+export const updateAdminSettingsBodyAndroidReleaseNotesArMax = 4000;
+
 
 
 export const UpdateAdminSettingsBody = zod.object({
@@ -859,7 +904,20 @@ export const UpdateAdminSettingsBody = zod.object({
   "sectionWorkTitle": zod.string().max(updateAdminSettingsBodyThemeIdentitySectionWorkTitleMax),
   "sectionWorkTitleAr": zod.string().max(updateAdminSettingsBodyThemeIdentitySectionWorkTitleArMax)
 }).describe('Editable identity marks and wording. An empty logo URL keeps the typographic mark.')
-})
+}),
+  "android": zod.object({
+  "versionName": zod.string().max(updateAdminSettingsBodyAndroidVersionNameMax).optional(),
+  "versionCode": zod.number().int().min(1).max(updateAdminSettingsBodyAndroidVersionCodeMax).optional(),
+  "releasedAt": zod.string().max(updateAdminSettingsBodyAndroidReleasedAtMax).nullish(),
+  "downloadEnabled": zod.boolean().optional(),
+  "apkUrl": zod.string().max(updateAdminSettingsBodyAndroidApkUrlMax).optional(),
+  "apkSizeBytes": zod.number().int().min(updateAdminSettingsBodyAndroidApkSizeBytesMin).max(updateAdminSettingsBodyAndroidApkSizeBytesMax).optional(),
+  "checksumSha256": zod.string().max(updateAdminSettingsBodyAndroidChecksumSha256Max).optional(),
+  "minAndroid": zod.string().max(updateAdminSettingsBodyAndroidMinAndroidMax).optional(),
+  "releaseNotes": zod.string().max(updateAdminSettingsBodyAndroidReleaseNotesMax).optional(),
+  "releaseNotesAr": zod.string().max(updateAdminSettingsBodyAndroidReleaseNotesArMax).optional(),
+  "debugBuild": zod.boolean().optional()
+}).optional()
 })
 
 export const updateAdminSettingsResponseThemeColorsBackgroundRegExp = new RegExp('^#[0-9A-Fa-f]{6}$');
@@ -990,7 +1048,20 @@ export const UpdateAdminSettingsResponse = zod.object({
   "sectionWorkTitle": zod.string().max(updateAdminSettingsResponseThemeIdentitySectionWorkTitleMax),
   "sectionWorkTitleAr": zod.string().max(updateAdminSettingsResponseThemeIdentitySectionWorkTitleArMax)
 }).describe('Editable identity marks and wording. An empty logo URL keeps the typographic mark.')
-})
+}),
+  "android": zod.object({
+  "versionName": zod.string(),
+  "versionCode": zod.number().int(),
+  "releasedAt": zod.string().nullable(),
+  "downloadEnabled": zod.boolean(),
+  "apkUrl": zod.string(),
+  "apkSizeBytes": zod.number().int(),
+  "checksumSha256": zod.string(),
+  "minAndroid": zod.string(),
+  "releaseNotes": zod.string(),
+  "releaseNotesAr": zod.string(),
+  "debugBuild": zod.boolean()
+}).describe('The published Android release. `apkUrl` stays empty until a real APK artifact exists, and the public download block is rendered only when `downloadEnabled` is true and `apkUrl` points at an APK file — never at a placeholder, a source archive or an HTML page.\n')
 })
 
 

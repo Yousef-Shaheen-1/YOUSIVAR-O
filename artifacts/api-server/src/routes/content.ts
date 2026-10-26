@@ -38,6 +38,7 @@ import { requirePermission } from "../middlewares/auth";
 import {
   DEFAULT_PROFILE,
   SITE_SETTINGS_KEY,
+  mergeAndroidRelease,
   readSiteRecord,
   readSiteSettings,
   setMediaVisibility,
@@ -94,6 +95,22 @@ function isSafePublicUrl(value: string | null | undefined): boolean {
   if (value.startsWith("/") && !value.startsWith("//") && !value.includes("\\")) return true;
   try {
     return new URL(value).protocol === "https:";
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * A release download may be empty (nothing published yet), an https URL or a
+ * same-site path, and it must resolve to an .apk file — a source archive, a
+ * placeholder or an HTML page is rejected instead of being offered as a build.
+ */
+function isApkDownload(value: string | null | undefined): boolean {
+  if (!value) return true;
+  if (!isSafePublicUrl(value)) return false;
+  try {
+    const path = new URL(value, "https://yousivar.invalid").pathname;
+    return path.toLowerCase().endsWith(".apk");
   } catch {
     return false;
   }
@@ -491,8 +508,21 @@ router.put(
       res.status(400).json({ error: parsed.error.message });
       return;
     }
+    // The Android block is optional on write: an older or partial client must
+    // not erase a published release, so the stored value is the fallback.
+    const current = await readSiteSettings();
+    const android = mergeAndroidRelease(parsed.data.android ?? current.android);
+    if (!isApkDownload(android.apkUrl)) {
+      res.status(400).json({ error: "The Android download must be an .apk file URL or a same-site path" });
+      return;
+    }
+    if (android.checksumSha256 && !/^[0-9a-fA-F]{64}$/.test(android.checksumSha256)) {
+      res.status(400).json({ error: "The SHA-256 checksum must be 64 hexadecimal characters" });
+      return;
+    }
     const value = await writeSiteRecord(SITE_SETTINGS_KEY, {
       ...parsed.data,
+      android,
       theme: mergeSiteTheme(parsed.data.theme),
     });
     await writeAudit(req.appIdentity!.userId, req.appIdentity!.email, "settings.update", SITE_SETTINGS_KEY);

@@ -1,7 +1,7 @@
 import path from 'path';
 import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
-import { defineConfig } from 'vite';
+import { defineConfig, type Plugin } from 'vite';
 
 import runtimeErrorOverlay from '@replit/vite-plugin-runtime-error-modal';
 
@@ -37,10 +37,38 @@ const previewApiOrigin =
     ? process.env.API_PROXY_ORIGIN
     : undefined;
 
+// Android packages are served from this app (see the Android download section in
+// src/App.tsx). Without an explicit content type the static file handler sends an
+// empty one and some browsers and download managers refuse the file. A production
+// host needs the same mapping — see DEPLOYMENT.md.
+const apkContentType = 'application/vnd.android.package-archive';
+function apkMimeTypePlugin(): Plugin {
+  const middleware = (
+    req: { url?: string },
+    res: { setHeader: (name: string, value: string) => void },
+    next: () => void,
+  ) => {
+    if (req.url?.split('?')[0]?.toLowerCase().endsWith('.apk')) {
+      res.setHeader('Content-Type', apkContentType);
+    }
+    next();
+  };
+  return {
+    name: 'omega-apk-content-type',
+    configureServer(server) {
+      server.middlewares.use(middleware);
+    },
+    configurePreviewServer(server) {
+      server.middlewares.use(middleware);
+    },
+  };
+}
+
 export default defineConfig({
   base: basePath,
   plugins: [
     react(),
+    apkMimeTypePlugin(),
     tailwindcss({ optimize: false }),
     runtimeErrorOverlay(),
     ...(process.env.NODE_ENV !== 'production' &&

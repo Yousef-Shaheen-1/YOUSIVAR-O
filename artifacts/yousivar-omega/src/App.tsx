@@ -5,11 +5,14 @@ import { publishableKeyFromHost } from '@clerk/react/internal';
 import { shadcn } from '@clerk/themes';
 import {
   Activity, ArrowDown, ArrowDownRight, ArrowRight, ArrowUp, ArrowUpRight, AudioLines,
-  Bot, Check, Command, FilePlus2,
+  Bot, Command, FilePlus2,
   Fingerprint, Github, Globe2, Languages, LayoutDashboard, LoaderCircle, LogOut, Palette,
-  Menu, Plus, Search, Send, Settings2,
+  Menu, Plus, Search, Send, Settings2, Smartphone,
   ShieldCheck, Sparkles, TerminalSquare, Trash2, Users, X, Zap,
 } from 'lucide-react';
+import { Button, Field, Heading, PageLoader, QueryError, Saved, Toggle } from '@/components/admin-ui';
+import { AndroidDownload } from '@/components/android-download';
+import AdminAndroidPage from '@/pages/admin-android';
 import {
   getGetAdminIdentityQueryKey, getGetAdminProfileQueryKey, getGetAdminSettingsQueryKey,
   getGetAssistantSettingsQueryKey, getGetPublicSiteQueryKey, getGetAdminSummaryQueryKey,
@@ -92,26 +95,8 @@ const appearance = {
   },
 };
 
-function PageLoader() {
-  return <div className="min-h-[48vh] grid place-items-center text-[var(--omega-muted-soft)]" aria-label="Loading">
-    <div className="w-[min(520px,90vw)] space-y-4"><div className="h-3 w-24 animate-pulse rounded bg-white/10"/><div className="h-10 w-2/3 animate-pulse rounded bg-white/10"/><div className="h-24 animate-pulse rounded-2xl bg-white/5"/></div>
-  </div>;
-}
-function QueryError({ retry, message = 'The service could not respond.' }: { retry: () => void; message?: string }) {
-  return <div className="rounded-2xl border border-red-200/20 bg-red-400/[.06] p-6 text-sm text-red-100" role="alert" data-testid="status-error">
-    <p>{message}</p><button className="mt-4 rounded-full border border-[var(--omega-border)] px-4 py-2 text-xs hover:bg-white/10" onClick={retry} data-testid="button-retry">Retry</button>
-  </div>;
-}
-function Saved({ pending, text = 'Changes saved' }: { pending: boolean; text?: string }) {
-  return <span className="inline-flex items-center gap-2 text-xs text-[var(--omega-muted)]" aria-live="polite">{pending ? <><LoaderCircle className="h-3.5 w-3.5 animate-spin"/>Saving</> : <><Check className="h-3.5 w-3.5 text-[var(--omega-accent)]"/>{text}</>}</span>;
-}
-function Button({ children, onClick, type = 'button', secondary = false, disabled = false, testId, className = '' }: { children: ReactNode; onClick?: () => void; type?: 'button' | 'submit'; secondary?: boolean; disabled?: boolean; testId?: string; className?: string }) {
-  return <button type={type} onClick={onClick} disabled={disabled} data-testid={testId} className={`focus-ring inline-flex min-h-10 items-center justify-center gap-2 rounded-full px-5 text-sm font-medium transition duration-200 disabled:cursor-not-allowed disabled:opacity-50 ${secondary ? 'border border-[var(--omega-border)] bg-white/[.04] text-zinc-200 hover:bg-white/10' : 'bg-[var(--omega-primary)] text-[var(--omega-background)] hover:bg-[var(--omega-primary-hover)]'} ${className}`}>{children}</button>;
-}
-function Field({ label, value, onChange, placeholder, multiline = false, type = 'text', testId }: { label: string; value: string; onChange: (value: string) => void; placeholder?: string; multiline?: boolean; type?: string; testId?: string }) {
-  const cls = 'w-full rounded-xl border border-[var(--omega-border)] bg-black/20 px-4 py-3 text-sm text-zinc-100 outline-none transition placeholder:text-[var(--omega-muted-faint)] focus:border-[var(--omega-accent)]/60 focus:bg-black/30';
-  return <label className="block space-y-2"><span className="eyebrow text-[var(--omega-muted-soft)]">{label}</span>{multiline ? <textarea data-testid={testId} className={`${cls} min-h-28 resize-y`} value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder}/> : <input data-testid={testId} className={cls} type={type} value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder}/>}</label>;
-}
+// The console primitives (PageLoader, QueryError, Saved, Button, Field, Toggle,
+// Heading) are shared with the standalone admin pages — see @/components/admin-ui.
 /** The owner's brand mark: a logo asset when one is set, the typographic mark otherwise. */
 function LogoMark({ theme, className = '' }: { theme: SiteTheme; className?: string }) {
   const { logoUrl, logoMark } = theme.identity;
@@ -120,10 +105,6 @@ function LogoMark({ theme, className = '' }: { theme: SiteTheme; className?: str
   }
   return <span className={className} data-testid="brand-mark">{logoMark || 'Ω'}</span>;
 }
-function Toggle({ label, checked, onChange, testId }: { label: string; checked: boolean; onChange: (value: boolean) => void; testId: string }) {
-  return <label className="flex cursor-pointer items-center justify-between gap-5 rounded-xl border border-[var(--omega-border)] px-4 py-3"><span className="text-sm text-zinc-300">{label}</span><input data-testid={testId} type="checkbox" checked={checked} onChange={e => onChange(e.target.checked)} className="h-4 w-4 accent-[var(--omega-accent)]"/></label>;
-}
-
 function Home() {
   const site = useGetPublicSite();
   const content = useListPublicContent({ limit: 60, offset: 0 });
@@ -150,7 +131,7 @@ function Home() {
         <button type="button" onClick={()=>setOwnerOpen(true)} aria-label="Owner access" title="Owner access" className="focus-ring grid h-9 w-9 place-items-center rounded-xl border border-[var(--omega-border)] bg-white/[.04] font-serif text-lg transition hover:border-[var(--omega-accent)]/50 hover:bg-white/10" data-testid="button-omega-owner"><LogoMark theme={theme} className="text-lg"/></button>
         <Link href="/" className="eyebrow hidden text-zinc-100 sm:block" data-testid="link-home">{settings?.projectName || 'YOUSIVAR–Ω'}</Link>
       </div>
-      <nav className="flex items-center gap-3 sm:gap-7"><a href="#work" className="eyebrow text-[var(--omega-muted)] transition hover:text-[var(--omega-highlight)]">{rtl ? identity.navWorkAr : identity.navWork}</a><a href="#about" className="eyebrow text-[var(--omega-muted)] transition hover:text-[var(--omega-highlight)]">{rtl ? identity.navAboutAr : identity.navAbout}</a>
+      <nav className="flex items-center gap-3 sm:gap-7"><a href="#work" className="eyebrow text-[var(--omega-muted)] transition hover:text-[var(--omega-highlight)]">{rtl ? identity.navWorkAr : identity.navWork}</a><a href="#about" className="eyebrow text-[var(--omega-muted)] transition hover:text-[var(--omega-highlight)]">{rtl ? identity.navAboutAr : identity.navAbout}</a><a href="#android" className="eyebrow hidden text-[var(--omega-muted)] transition hover:text-[var(--omega-highlight)] sm:block" data-testid="link-nav-android">{rtl ? 'تطبيق أندرويد' : 'Android'}</a>
         <button onClick={changeLocale} className="focus-ring inline-flex items-center gap-2 rounded-full border border-[var(--omega-border)] px-3 py-2 text-xs text-zinc-300 hover:bg-white/10" data-testid="button-locale"><Languages size={14}/>{rtl ? 'EN' : 'عربي'}</button>
         <Link href="/admin" className="eyebrow hidden text-[var(--omega-muted-soft)] transition hover:text-[var(--omega-secondary)] md:block" data-testid="link-admin">{rtl ? identity.privateConsoleAr : identity.privateConsole} <ArrowUpRight className="ml-1 inline h-3 w-3"/></Link>
       </nav>
@@ -204,6 +185,7 @@ function Home() {
     <section className="mx-auto max-w-[1440px] px-5 py-24 sm:px-10 sm:py-32"><div className="grid gap-10 lg:grid-cols-[1fr_auto] lg:items-end"><div><p className="eyebrow text-[var(--omega-secondary)]">Architecture, with a point of view</p><h2 className="display mt-5 max-w-4xl text-5xl leading-[.95] sm:text-7xl">A precise surface.<br/><span className="text-[var(--omega-muted-soft)]">A curious engine.</span></h2></div><p className="max-w-sm text-sm leading-7 text-[var(--omega-muted-soft)]">YOUSIVAR–Ω is a public window into an evolving body of work, and a private workspace for the person building it.</p></div>
       <div className="mt-16 grid gap-px overflow-hidden rounded-2xl border border-[var(--omega-border)] bg-white/10 sm:grid-cols-3">{[['01','Independent by design','Private tools, public proof.'],['02','Built to evolve','Content and identity belong to their owner.'],['03','Made for the long run','A focused system, not another feed.']].map(([n,t,d])=><div key={n} className="bg-[var(--omega-background)] p-7 sm:p-9"><span className="eyebrow text-[var(--omega-secondary)]">{n}</span><h3 className="mt-8 text-lg text-zinc-200">{t}</h3><p className="mt-2 text-sm text-[var(--omega-muted-soft)]">{d}</p></div>)}</div>
     </section>
+    <AndroidDownload release={settings?.android} rtl={rtl} projectName={settings?.projectName || 'YOUSIVAR–Ω'}/>
     <footer className="border-t border-[var(--omega-border)] px-5 py-8 sm:px-10"><div className="mx-auto flex max-w-[1440px] flex-col justify-between gap-4 text-xs text-[var(--omega-muted-faint)] sm:flex-row"><span className="eyebrow">YOUSIVAR–Ω / PRIVATE BY NATURE</span><span>© {new Date().getFullYear()} · Built with clarity.</span></div></footer>
     <OwnerAuthModal open={ownerOpen} onClose={()=>setOwnerOpen(false)} onAuthenticated={()=>{setOwnerOpen(false);qc.clear();setLocation('/admin');}}/>
   </main>;
@@ -215,6 +197,7 @@ const navigation = [
   { href: '/admin/branding', label: 'Branding', icon: Palette },
   { href: '/admin/profile', label: 'Profile', icon: Fingerprint },
   { href: '/admin/settings', label: 'Settings', icon: Settings2 },
+  { href: '/admin/android', label: 'Android', icon: Smartphone },
   { href: '/admin/ai', label: 'AI studio', icon: Bot },
   { href: '/admin/users', label: 'Access', icon: Users },
   { href: '/admin/activity', label: 'Activity', icon: Activity },
@@ -254,9 +237,6 @@ function AdminGate({ children, permission }: { children: ReactNode; permission?:
   if (!identity.data.permissions?.length) return <div className="grain grid min-h-[100dvh] place-items-center bg-[var(--omega-background)] p-6 text-center text-[var(--omega-muted)]"><div><ShieldCheck className="mx-auto h-8 w-8"/><h1 className="display mt-4 text-4xl">No permissions assigned</h1><p className="mt-3 text-sm">Your authenticated identity does not currently have application permissions.</p></div></div>;
   if (permission && !identity.data.permissions.includes(permission)) return <div className="grain grid min-h-[100dvh] place-items-center bg-[var(--omega-background)] p-6 text-center text-[var(--omega-muted)]"><div><ShieldCheck className="mx-auto h-8 w-8"/><p className="eyebrow mt-5 text-[var(--omega-muted-faint)]">Permission boundary</p><h1 className="display mt-3 text-4xl">Access is not assigned.</h1><p className="mt-3 text-sm">This section requires <code className="text-zinc-300">{permission}</code>.</p><Link href="/admin" className="mt-6 inline-flex rounded-full border border-[var(--omega-border)] px-5 py-3 text-sm text-zinc-200">Return to overview</Link></div></div>;
   return <AdminShell>{children}</AdminShell>;
-}
-function Heading({ label, title, detail, action }: { label: string; title: string; detail?: string; action?: ReactNode }) {
-  return <div className="mb-9 flex flex-col justify-between gap-5 sm:flex-row sm:items-end"><div><p className="eyebrow text-[var(--omega-secondary)]">{label}</p><h1 className="display mt-2 text-5xl leading-none sm:text-6xl">{title}</h1>{detail&&<p className="mt-4 max-w-2xl text-sm leading-6 text-[var(--omega-muted-soft)]">{detail}</p>}</div>{action}</div>;
 }
 function AdminDashboard() {
   const identity = useGetAdminIdentity();
@@ -487,6 +467,7 @@ function ClerkRoutes() {
       <Route path="/admin/branding" component={()=> <Protected page={BrandingPage} permission="settings:write"/>}/>
       <Route path="/admin/profile" component={()=> <Protected page={ProfilePage} permission="settings:write"/>}/>
       <Route path="/admin/settings" component={()=> <Protected page={SettingsPage} permission="settings:write"/>}/>
+      <Route path="/admin/android" component={()=> <Protected page={AdminAndroidPage} permission="settings:write"/>}/>
       <Route path="/admin/ai" component={()=> <Protected page={AiPage} permission="integrations:write"/>}/>
       <Route path="/admin/users" component={()=> <Protected page={UsersPage} permission="users:manage"/>}/>
       <Route path="/admin/activity" component={()=> <Protected page={ActivityPage} permission="audit:read"/>}/>

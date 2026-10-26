@@ -1,0 +1,20 @@
+{
+  "name": "yousivar-omega-android",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Android shell for YOUSIVAR-Ω. Packaging only — the application itself is the web build of artifacts/yousivar-omega.",
+  "scripts": {
+    "sync": "cap sync android",
+    "add:android": "cap add android",
+    "build:debug": "node scripts/build-android.mjs debug",
+    "build:release": "node scripts/build-android.mjs release",
+    "doctor": "cap doctor android"
+  },
+  "dependencies": {
+    "@capacitor/android": "8.5.3",
+    "@capacitor/core": "8.5.3"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "8.5.3"
+  }
+}

@@ -18,6 +18,8 @@ export * from './adminUserRoleUpdateRole';
 export * from './aiProvider';
 export * from './aiProviderProvider';
 export * from './aiProviderUpdate';
+export * from './androidRelease';
+export * from './androidReleaseUpdate';
 export * from './assistantMessageInput';
 export * from './assistantMessageResponse';
 export * from './assistantSettings';
