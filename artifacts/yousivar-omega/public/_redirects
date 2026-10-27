@@ -1,13 +1,2 @@
-# Cloudflare Pages routing for the SPA.
-#
-# The client routes with wouter (history API), so a hard refresh on a deep link
-# (:lang, /admin, ...) must return the app shell instead of a 404. Cloudflare
-# Pages serves a matching static file BEFORE applying these rules, so
-# /assets/*, /downloads/*, /favicon.svg, /manifest.webmanifest, /sw.js and
-# /robots.txt are still served as real files.
-#
-# /api/* never reaches Pages: the API Worker owns that path through a Worker
-# route on the same hostname (see artifacts/api-server/wrangler.jsonc). That
-# single-origin wiring is mandatory — the owner session cookie, the Clerk
-# session and the API's same-origin write guard all depend on it.
-/*  /index.html  200
+# Cloudflare Pages serves index.html for unmatched paths in an SPA.
+# API and downloads routes are handled by Pages Functions.
