@@ -16,6 +16,9 @@
 # - browser calls: https://app.example.com/api/...
 # - Pages function: proxy /api/* to https://api.example.com/api/*
 
+# Required top-level name for Pages configuration
+name = "yousivar-omega"
+
 # Pages app build output directory
 pages_build_output_dir = "./dist/public"
 compatibility_date = "2025-07-01"
