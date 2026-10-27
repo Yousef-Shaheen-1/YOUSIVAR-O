@@ -13,8 +13,10 @@ import * as zod from 'zod';
  * @summary Health check
  */
 export const HealthCheckResponse = zod.object({
-  "status": zod.string()
-})
+  "status": zod.string(),
+  "runtime": zod.enum(['node', 'cloudflare-worker']).optional(),
+  "storageDriver": zod.string().optional()
+}).describe('Liveness and deployment facts. `runtime` and `storageDriver` come from the environment the process booted with, so a deployment can be checked without reading any secret.\n')
 
 
 /**
@@ -89,6 +91,20 @@ export const getPublicSiteResponseSettingsThemeIdentityCtaWorkArMax = 60;
 export const getPublicSiteResponseSettingsThemeIdentitySectionWorkTitleMax = 80;
 
 export const getPublicSiteResponseSettingsThemeIdentitySectionWorkTitleArMax = 80;
+
+export const getPublicSiteResponseSettingsAudioVolumeMin = 0;
+export const getPublicSiteResponseSettingsAudioVolumeMax = 1;
+
+export const getPublicSiteResponseSettingsAudioTitleMax = 120;
+
+export const getPublicSiteResponseSettingsAudioArtistMax = 120;
+
+export const getPublicSiteResponseSettingsAudioUrlMax = 2048;
+
+export const getPublicSiteResponseSettingsAudioContentTypeMax = 80;
+
+export const getPublicSiteResponseSettingsAudioSizeBytesMin = 0;
+export const getPublicSiteResponseSettingsAudioSizeBytesMax = 12582912;
 
 export const getPublicSiteResponseProfileSocialsItemLabelMax = 60;
 
@@ -166,7 +182,19 @@ export const GetPublicSiteResponse = zod.object({
   "releaseNotes": zod.string(),
   "releaseNotesAr": zod.string(),
   "debugBuild": zod.boolean()
-}).describe('The published Android release. `apkUrl` stays empty until a real APK artifact exists, and the public download block is rendered only when `downloadEnabled` is true and `apkUrl` points at an APK file — never at a placeholder, a source archive or an HTML page.\n')
+}).describe('The published Android release. `apkUrl` stays empty until a real APK artifact exists, and the public download block is rendered only when `downloadEnabled` is true and `apkUrl` points at an APK file — never at a placeholder, a source archive or an HTML page.\n'),
+  "audio": zod.object({
+  "enabled": zod.boolean(),
+  "autoplay": zod.boolean(),
+  "muteByDefault": zod.boolean(),
+  "volume": zod.number().min(getPublicSiteResponseSettingsAudioVolumeMin).max(getPublicSiteResponseSettingsAudioVolumeMax),
+  "title": zod.string().max(getPublicSiteResponseSettingsAudioTitleMax),
+  "artist": zod.string().max(getPublicSiteResponseSettingsAudioArtistMax),
+  "url": zod.string().max(getPublicSiteResponseSettingsAudioUrlMax),
+  "contentType": zod.string().max(getPublicSiteResponseSettingsAudioContentTypeMax),
+  "sizeBytes": zod.number().int().min(getPublicSiteResponseSettingsAudioSizeBytesMin).max(getPublicSiteResponseSettingsAudioSizeBytesMax),
+  "updatedAt": zod.string().nullable()
+}).describe('Optional startup audio. `enabled` alone never plays anything: the client also needs a real audio URL, the owner\'s autoplay setting and the visitor\'s own consent — the browser autoplay policy, the visitor\'s stored mute choice and the reduced-motion preference are all respected.\n')
 }),
   "profile": zod.object({
   "name": zod.string(),
@@ -670,6 +698,20 @@ export const getAdminSettingsResponseThemeIdentitySectionWorkTitleMax = 80;
 
 export const getAdminSettingsResponseThemeIdentitySectionWorkTitleArMax = 80;
 
+export const getAdminSettingsResponseAudioVolumeMin = 0;
+export const getAdminSettingsResponseAudioVolumeMax = 1;
+
+export const getAdminSettingsResponseAudioTitleMax = 120;
+
+export const getAdminSettingsResponseAudioArtistMax = 120;
+
+export const getAdminSettingsResponseAudioUrlMax = 2048;
+
+export const getAdminSettingsResponseAudioContentTypeMax = 80;
+
+export const getAdminSettingsResponseAudioSizeBytesMin = 0;
+export const getAdminSettingsResponseAudioSizeBytesMax = 12582912;
+
 
 
 export const GetAdminSettingsResponse = zod.object({
@@ -741,7 +783,19 @@ export const GetAdminSettingsResponse = zod.object({
   "releaseNotes": zod.string(),
   "releaseNotesAr": zod.string(),
   "debugBuild": zod.boolean()
-}).describe('The published Android release. `apkUrl` stays empty until a real APK artifact exists, and the public download block is rendered only when `downloadEnabled` is true and `apkUrl` points at an APK file — never at a placeholder, a source archive or an HTML page.\n')
+}).describe('The published Android release. `apkUrl` stays empty until a real APK artifact exists, and the public download block is rendered only when `downloadEnabled` is true and `apkUrl` points at an APK file — never at a placeholder, a source archive or an HTML page.\n'),
+  "audio": zod.object({
+  "enabled": zod.boolean(),
+  "autoplay": zod.boolean(),
+  "muteByDefault": zod.boolean(),
+  "volume": zod.number().min(getAdminSettingsResponseAudioVolumeMin).max(getAdminSettingsResponseAudioVolumeMax),
+  "title": zod.string().max(getAdminSettingsResponseAudioTitleMax),
+  "artist": zod.string().max(getAdminSettingsResponseAudioArtistMax),
+  "url": zod.string().max(getAdminSettingsResponseAudioUrlMax),
+  "contentType": zod.string().max(getAdminSettingsResponseAudioContentTypeMax),
+  "sizeBytes": zod.number().int().min(getAdminSettingsResponseAudioSizeBytesMin).max(getAdminSettingsResponseAudioSizeBytesMax),
+  "updatedAt": zod.string().nullable()
+}).describe('Optional startup audio. `enabled` alone never plays anything: the client also needs a real audio URL, the owner\'s autoplay setting and the visitor\'s own consent — the browser autoplay policy, the visitor\'s stored mute choice and the reduced-motion preference are all respected.\n')
 })
 
 
@@ -846,6 +900,20 @@ export const updateAdminSettingsBodyAndroidReleaseNotesMax = 4000;
 
 export const updateAdminSettingsBodyAndroidReleaseNotesArMax = 4000;
 
+export const updateAdminSettingsBodyAudioVolumeMin = 0;
+export const updateAdminSettingsBodyAudioVolumeMax = 1;
+
+export const updateAdminSettingsBodyAudioTitleMax = 120;
+
+export const updateAdminSettingsBodyAudioArtistMax = 120;
+
+export const updateAdminSettingsBodyAudioUrlMax = 2048;
+
+export const updateAdminSettingsBodyAudioContentTypeMax = 80;
+
+export const updateAdminSettingsBodyAudioSizeBytesMin = 0;
+export const updateAdminSettingsBodyAudioSizeBytesMax = 12582912;
+
 
 
 export const UpdateAdminSettingsBody = zod.object({
@@ -917,6 +985,17 @@ export const UpdateAdminSettingsBody = zod.object({
   "releaseNotes": zod.string().max(updateAdminSettingsBodyAndroidReleaseNotesMax).optional(),
   "releaseNotesAr": zod.string().max(updateAdminSettingsBodyAndroidReleaseNotesArMax).optional(),
   "debugBuild": zod.boolean().optional()
+}).optional(),
+  "audio": zod.object({
+  "enabled": zod.boolean().optional(),
+  "autoplay": zod.boolean().optional(),
+  "muteByDefault": zod.boolean().optional(),
+  "volume": zod.number().min(updateAdminSettingsBodyAudioVolumeMin).max(updateAdminSettingsBodyAudioVolumeMax).optional(),
+  "title": zod.string().max(updateAdminSettingsBodyAudioTitleMax).optional(),
+  "artist": zod.string().max(updateAdminSettingsBodyAudioArtistMax).optional(),
+  "url": zod.string().max(updateAdminSettingsBodyAudioUrlMax).optional(),
+  "contentType": zod.string().max(updateAdminSettingsBodyAudioContentTypeMax).optional(),
+  "sizeBytes": zod.number().int().min(updateAdminSettingsBodyAudioSizeBytesMin).max(updateAdminSettingsBodyAudioSizeBytesMax).optional()
 }).optional()
 })
 
@@ -990,6 +1069,20 @@ export const updateAdminSettingsResponseThemeIdentitySectionWorkTitleMax = 80;
 
 export const updateAdminSettingsResponseThemeIdentitySectionWorkTitleArMax = 80;
 
+export const updateAdminSettingsResponseAudioVolumeMin = 0;
+export const updateAdminSettingsResponseAudioVolumeMax = 1;
+
+export const updateAdminSettingsResponseAudioTitleMax = 120;
+
+export const updateAdminSettingsResponseAudioArtistMax = 120;
+
+export const updateAdminSettingsResponseAudioUrlMax = 2048;
+
+export const updateAdminSettingsResponseAudioContentTypeMax = 80;
+
+export const updateAdminSettingsResponseAudioSizeBytesMin = 0;
+export const updateAdminSettingsResponseAudioSizeBytesMax = 12582912;
+
 
 
 export const UpdateAdminSettingsResponse = zod.object({
@@ -1061,7 +1154,19 @@ export const UpdateAdminSettingsResponse = zod.object({
   "releaseNotes": zod.string(),
   "releaseNotesAr": zod.string(),
   "debugBuild": zod.boolean()
-}).describe('The published Android release. `apkUrl` stays empty until a real APK artifact exists, and the public download block is rendered only when `downloadEnabled` is true and `apkUrl` points at an APK file — never at a placeholder, a source archive or an HTML page.\n')
+}).describe('The published Android release. `apkUrl` stays empty until a real APK artifact exists, and the public download block is rendered only when `downloadEnabled` is true and `apkUrl` points at an APK file — never at a placeholder, a source archive or an HTML page.\n'),
+  "audio": zod.object({
+  "enabled": zod.boolean(),
+  "autoplay": zod.boolean(),
+  "muteByDefault": zod.boolean(),
+  "volume": zod.number().min(updateAdminSettingsResponseAudioVolumeMin).max(updateAdminSettingsResponseAudioVolumeMax),
+  "title": zod.string().max(updateAdminSettingsResponseAudioTitleMax),
+  "artist": zod.string().max(updateAdminSettingsResponseAudioArtistMax),
+  "url": zod.string().max(updateAdminSettingsResponseAudioUrlMax),
+  "contentType": zod.string().max(updateAdminSettingsResponseAudioContentTypeMax),
+  "sizeBytes": zod.number().int().min(updateAdminSettingsResponseAudioSizeBytesMin).max(updateAdminSettingsResponseAudioSizeBytesMax),
+  "updatedAt": zod.string().nullable()
+}).describe('Optional startup audio. `enabled` alone never plays anything: the client also needs a real audio URL, the owner\'s autoplay setting and the visitor\'s own consent — the browser autoplay policy, the visitor\'s stored mute choice and the reduced-motion preference are all respected.\n')
 })
 
 
@@ -1410,6 +1515,455 @@ export const CompleteMediaUploadResponse = zod.object({
   "contentType": zod.string(),
   "size": zod.number().int(),
   "createdAt": zod.coerce.date()
+})
+
+
+/**
+ * Returns the owner's Termux catalog (projects, commands, scripts and guides) together with an explicit statement of what this deployment can and cannot execute. The web API never runs shell commands.
+ * @summary Owner-only Termux management console
+ */
+export const getTermuxConsoleResponseIntroMax = 600;
+
+export const getTermuxConsoleResponseIntroArMax = 600;
+
+export const getTermuxConsoleResponseEntriesItemIdMax = 60;
+
+export const getTermuxConsoleResponseEntriesItemTitleMax = 160;
+
+export const getTermuxConsoleResponseEntriesItemTitleArMax = 160;
+
+export const getTermuxConsoleResponseEntriesItemSummaryMax = 600;
+
+export const getTermuxConsoleResponseEntriesItemCommandMax = 4000;
+
+export const getTermuxConsoleResponseEntriesItemDocumentationUrlMax = 2048;
+
+export const getTermuxConsoleResponseEntriesItemNotesMax = 1000;
+
+export const getTermuxConsoleResponseEntriesMax = 100;
+
+
+
+export const GetTermuxConsoleResponse = zod.object({
+  "intro": zod.string().max(getTermuxConsoleResponseIntroMax),
+  "introAr": zod.string().max(getTermuxConsoleResponseIntroArMax),
+  "entries": zod.array(zod.object({
+  "id": zod.string().max(getTermuxConsoleResponseEntriesItemIdMax),
+  "kind": zod.enum(['project', 'command', 'script', 'guide']),
+  "title": zod.string().max(getTermuxConsoleResponseEntriesItemTitleMax),
+  "titleAr": zod.string().max(getTermuxConsoleResponseEntriesItemTitleArMax).nullable(),
+  "summary": zod.string().max(getTermuxConsoleResponseEntriesItemSummaryMax),
+  "command": zod.string().max(getTermuxConsoleResponseEntriesItemCommandMax),
+  "documentationUrl": zod.string().max(getTermuxConsoleResponseEntriesItemDocumentationUrlMax).nullable(),
+  "requiresRoot": zod.boolean(),
+  "requiresStorage": zod.boolean(),
+  "enabled": zod.boolean(),
+  "notes": zod.string().max(getTermuxConsoleResponseEntriesItemNotesMax).nullable()
+}).describe('One entry of the owner\'s Termux catalog. `command` is documentation the owner reviews and runs on their own device; the API never executes it.\n')).max(getTermuxConsoleResponseEntriesMax),
+  "capability": zod.object({
+  "executionAvailable": zod.boolean(),
+  "reason": zod.string(),
+  "localRunHint": zod.string(),
+  "supportedKinds": zod.array(zod.string())
+}).describe('What this deployment can do with a catalog entry. `executionAvailable` is false for every web deployment of this application, and the reason is stated instead of hidden.\n'),
+  "updatedAt": zod.string().nullable()
+})
+
+
+/**
+ * Stores the catalog entries. Nothing here is executed by the API.
+ * @summary Replace the owner's Termux catalog
+ */
+export const updateTermuxConsoleBodyIntroMax = 600;
+
+export const updateTermuxConsoleBodyIntroArMax = 600;
+
+export const updateTermuxConsoleBodyEntriesItemIdMax = 60;
+
+export const updateTermuxConsoleBodyEntriesItemTitleMax = 160;
+
+export const updateTermuxConsoleBodyEntriesItemTitleArMax = 160;
+
+export const updateTermuxConsoleBodyEntriesItemSummaryMax = 600;
+
+export const updateTermuxConsoleBodyEntriesItemCommandMax = 4000;
+
+export const updateTermuxConsoleBodyEntriesItemDocumentationUrlMax = 2048;
+
+export const updateTermuxConsoleBodyEntriesItemNotesMax = 1000;
+
+export const updateTermuxConsoleBodyEntriesMax = 100;
+
+
+
+export const UpdateTermuxConsoleBody = zod.object({
+  "intro": zod.string().max(updateTermuxConsoleBodyIntroMax),
+  "introAr": zod.string().max(updateTermuxConsoleBodyIntroArMax),
+  "entries": zod.array(zod.object({
+  "id": zod.string().max(updateTermuxConsoleBodyEntriesItemIdMax),
+  "kind": zod.enum(['project', 'command', 'script', 'guide']),
+  "title": zod.string().max(updateTermuxConsoleBodyEntriesItemTitleMax),
+  "titleAr": zod.string().max(updateTermuxConsoleBodyEntriesItemTitleArMax).nullable(),
+  "summary": zod.string().max(updateTermuxConsoleBodyEntriesItemSummaryMax),
+  "command": zod.string().max(updateTermuxConsoleBodyEntriesItemCommandMax),
+  "documentationUrl": zod.string().max(updateTermuxConsoleBodyEntriesItemDocumentationUrlMax).nullable(),
+  "requiresRoot": zod.boolean(),
+  "requiresStorage": zod.boolean(),
+  "enabled": zod.boolean(),
+  "notes": zod.string().max(updateTermuxConsoleBodyEntriesItemNotesMax).nullable()
+}).describe('One entry of the owner\'s Termux catalog. `command` is documentation the owner reviews and runs on their own device; the API never executes it.\n')).max(updateTermuxConsoleBodyEntriesMax)
+})
+
+export const updateTermuxConsoleResponseIntroMax = 600;
+
+export const updateTermuxConsoleResponseIntroArMax = 600;
+
+export const updateTermuxConsoleResponseEntriesItemIdMax = 60;
+
+export const updateTermuxConsoleResponseEntriesItemTitleMax = 160;
+
+export const updateTermuxConsoleResponseEntriesItemTitleArMax = 160;
+
+export const updateTermuxConsoleResponseEntriesItemSummaryMax = 600;
+
+export const updateTermuxConsoleResponseEntriesItemCommandMax = 4000;
+
+export const updateTermuxConsoleResponseEntriesItemDocumentationUrlMax = 2048;
+
+export const updateTermuxConsoleResponseEntriesItemNotesMax = 1000;
+
+export const updateTermuxConsoleResponseEntriesMax = 100;
+
+
+
+export const UpdateTermuxConsoleResponse = zod.object({
+  "intro": zod.string().max(updateTermuxConsoleResponseIntroMax),
+  "introAr": zod.string().max(updateTermuxConsoleResponseIntroArMax),
+  "entries": zod.array(zod.object({
+  "id": zod.string().max(updateTermuxConsoleResponseEntriesItemIdMax),
+  "kind": zod.enum(['project', 'command', 'script', 'guide']),
+  "title": zod.string().max(updateTermuxConsoleResponseEntriesItemTitleMax),
+  "titleAr": zod.string().max(updateTermuxConsoleResponseEntriesItemTitleArMax).nullable(),
+  "summary": zod.string().max(updateTermuxConsoleResponseEntriesItemSummaryMax),
+  "command": zod.string().max(updateTermuxConsoleResponseEntriesItemCommandMax),
+  "documentationUrl": zod.string().max(updateTermuxConsoleResponseEntriesItemDocumentationUrlMax).nullable(),
+  "requiresRoot": zod.boolean(),
+  "requiresStorage": zod.boolean(),
+  "enabled": zod.boolean(),
+  "notes": zod.string().max(updateTermuxConsoleResponseEntriesItemNotesMax).nullable()
+}).describe('One entry of the owner\'s Termux catalog. `command` is documentation the owner reviews and runs on their own device; the API never executes it.\n')).max(updateTermuxConsoleResponseEntriesMax),
+  "capability": zod.object({
+  "executionAvailable": zod.boolean(),
+  "reason": zod.string(),
+  "localRunHint": zod.string(),
+  "supportedKinds": zod.array(zod.string())
+}).describe('What this deployment can do with a catalog entry. `executionAvailable` is false for every web deployment of this application, and the reason is stated instead of hidden.\n'),
+  "updatedAt": zod.string().nullable()
+})
+
+
+/**
+ * Writes an audit entry for the confirmed review of one catalog entry and answers with the exact command to run locally. It never executes it: no web endpoint of this application has shell access.
+ * @summary Record an explicit owner confirmation for a Termux entry
+ */
+export const confirmTermuxCommandBodyEntryIdMax = 60;
+
+
+
+export const ConfirmTermuxCommandBody = zod.object({
+  "entryId": zod.string().min(1).max(confirmTermuxCommandBodyEntryIdMax),
+  "confirmation": zod.boolean()
+})
+
+export const ConfirmTermuxCommandResponse = zod.object({
+  "entryId": zod.string(),
+  "recorded": zod.boolean(),
+  "executed": zod.boolean(),
+  "message": zod.string(),
+  "command": zod.string()
+})
+
+
+/**
+ * @summary Owner-only GitHub integration status
+ */
+export const GetGithubIntegrationResponse = zod.object({
+  "connection": zod.object({
+  "connected": zod.boolean(),
+  "method": zod.enum(['oauth', 'token', 'none']),
+  "account": zod.string(),
+  "scopes": zod.array(zod.string()),
+  "connectedAt": zod.string().nullable(),
+  "oauthConfigured": zod.boolean(),
+  "encryptionReady": zod.boolean()
+}),
+  "imports": zod.array(zod.object({
+  "id": zod.string(),
+  "repository": zod.string(),
+  "branch": zod.string(),
+  "status": zod.enum(['draft', 'published', 'archived', 'failed']),
+  "deploymentStatus": zod.string(),
+  "contentItemId": zod.string().nullable(),
+  "validation": zod.object({
+  "ok": zod.boolean(),
+  "issues": zod.array(zod.string())
+}),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string()
+}))
+})
+
+
+/**
+ * Returns the GitHub authorize URL to open. Requires a registered GitHub OAuth app; when it is not configured the response says so instead of returning a broken link.
+ * @summary Begin the GitHub OAuth connection
+ */
+export const StartGithubConnectResponse = zod.object({
+  "authorizeUrl": zod.string(),
+  "scopes": zod.array(zod.string()),
+  "message": zod.string()
+})
+
+
+/**
+ * Stores the supplied token encrypted, server-side only. The value is never returned to the browser, never logged and can be revoked with DELETE /admin/github/connection.
+ * @summary Connect GitHub with a scoped access token
+ */
+export const connectGithubTokenBodyTokenMin = 8;
+export const connectGithubTokenBodyTokenMax = 400;
+
+
+
+export const ConnectGithubTokenBody = zod.object({
+  "token": zod.string().min(connectGithubTokenBodyTokenMin).max(connectGithubTokenBodyTokenMax)
+})
+
+export const ConnectGithubTokenResponse = zod.object({
+  "connection": zod.object({
+  "connected": zod.boolean(),
+  "method": zod.enum(['oauth', 'token', 'none']),
+  "account": zod.string(),
+  "scopes": zod.array(zod.string()),
+  "connectedAt": zod.string().nullable(),
+  "oauthConfigured": zod.boolean(),
+  "encryptionReady": zod.boolean()
+}),
+  "imports": zod.array(zod.object({
+  "id": zod.string(),
+  "repository": zod.string(),
+  "branch": zod.string(),
+  "status": zod.enum(['draft', 'published', 'archived', 'failed']),
+  "deploymentStatus": zod.string(),
+  "contentItemId": zod.string().nullable(),
+  "validation": zod.object({
+  "ok": zod.boolean(),
+  "issues": zod.array(zod.string())
+}),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string()
+}))
+})
+
+
+/**
+ * Exchanges the authorization code for a token (kept server-side) and redirects the browser back to the owner console. Every failure is reported as a redirect with a status query parameter, never as a partial connection.
+ * @summary GitHub OAuth callback
+ */
+export const CompleteGithubConnectQueryParams = zod.object({
+  "code": zod.coerce.string().optional(),
+  "state": zod.coerce.string().optional()
+})
+
+export const CompleteGithubConnectResponse = zod.void()
+
+
+/**
+ * @summary List repositories the connected account can read
+ */
+export const ListGithubRepositoriesResponseItem = zod.object({
+  "id": zod.number().int(),
+  "fullName": zod.string(),
+  "name": zod.string(),
+  "owner": zod.string(),
+  "private": zod.boolean(),
+  "defaultBranch": zod.string(),
+  "description": zod.string().nullable(),
+  "language": zod.string().nullable(),
+  "stars": zod.number().int(),
+  "forks": zod.number().int(),
+  "updatedAt": zod.string().nullable(),
+  "htmlUrl": zod.string(),
+  "access": zod.enum(['admin', 'push', 'pull', 'none'])
+})
+export const ListGithubRepositoriesResponse = zod.array(ListGithubRepositoriesResponseItem)
+
+
+/**
+ * @summary List the branches of one repository
+ */
+export const ListGithubBranchesParams = zod.object({
+  "owner": zod.coerce.string(),
+  "name": zod.coerce.string()
+})
+
+export const ListGithubBranchesResponse = zod.object({
+  "branches": zod.array(zod.string())
+})
+
+
+/**
+ * Reads repository metadata, the README and the top-level file list of the selected branch. Sensitive paths are never read and are reported as skipped; nothing is written to the catalog by this call.
+ * @summary Preview what an import would publish
+ */
+export const previewGithubImportBodyRepositoryMin = 3;
+export const previewGithubImportBodyRepositoryMax = 200;
+
+export const previewGithubImportBodyBranchMax = 200;
+
+
+
+export const PreviewGithubImportBody = zod.object({
+  "repository": zod.string().min(previewGithubImportBodyRepositoryMin).max(previewGithubImportBodyRepositoryMax),
+  "branch": zod.string().min(1).max(previewGithubImportBodyBranchMax)
+})
+
+export const PreviewGithubImportResponse = zod.object({
+  "repository": zod.string(),
+  "branch": zod.string(),
+  "title": zod.string(),
+  "description": zod.string(),
+  "readme": zod.string(),
+  "readmeUrl": zod.string().nullable(),
+  "topics": zod.array(zod.string()),
+  "language": zod.string().nullable(),
+  "stars": zod.number().int(),
+  "forks": zod.number().int(),
+  "assets": zod.array(zod.object({
+  "path": zod.string(),
+  "type": zod.string(),
+  "size": zod.number().int()
+})),
+  "skippedSensitive": zod.array(zod.string()),
+  "warnings": zod.array(zod.string()),
+  "existingContentItemId": zod.string().nullable()
+})
+
+
+/**
+ * Creates or updates the catalog entry for a repository. It saves a draft unless the owner explicitly asks for publication, and it records the import status.
+ * @summary Publish or update a reviewed repository in the catalog
+ */
+export const publishGithubImportBodyRepositoryMin = 3;
+export const publishGithubImportBodyRepositoryMax = 200;
+
+export const publishGithubImportBodyBranchMax = 200;
+
+export const publishGithubImportBodyTitleMax = 160;
+
+export const publishGithubImportBodyDescriptionMax = 4000;
+
+export const publishGithubImportBodyCategoryMax = 80;
+
+export const publishGithubImportBodyTagsItemMax = 40;
+
+export const publishGithubImportBodyTagsMax = 30;
+
+
+
+export const PublishGithubImportBody = zod.object({
+  "repository": zod.string().min(publishGithubImportBodyRepositoryMin).max(publishGithubImportBodyRepositoryMax),
+  "branch": zod.string().min(1).max(publishGithubImportBodyBranchMax),
+  "title": zod.string().min(1).max(publishGithubImportBodyTitleMax),
+  "description": zod.string().max(publishGithubImportBodyDescriptionMax),
+  "category": zod.string().min(1).max(publishGithubImportBodyCategoryMax),
+  "tags": zod.array(zod.string().max(publishGithubImportBodyTagsItemMax)).max(publishGithubImportBodyTagsMax),
+  "publish": zod.boolean()
+})
+
+export const publishGithubImportResponseItemCategoryMax = 80;
+
+export const publishGithubImportResponseItemActionsItemLabelMax = 80;
+
+export const publishGithubImportResponseItemActionsItemUrlMax = 2048;
+
+export const publishGithubImportResponseItemActionsItemKindDefault = `secondary`;
+export const publishGithubImportResponseItemMediaItemUrlMax = 2048;
+
+
+
+export const PublishGithubImportResponse = zod.object({
+  "item": zod.object({
+  "id": zod.string().uuid(),
+  "category": zod.string().min(1).max(publishGithubImportResponseItemCategoryMax),
+  "title": zod.string(),
+  "titleAr": zod.string().nullish(),
+  "description": zod.string(),
+  "descriptionAr": zod.string().nullish(),
+  "url": zod.string().nullish(),
+  "tags": zod.array(zod.string()),
+  "actions": zod.array(zod.object({
+  "label": zod.string().min(1).max(publishGithubImportResponseItemActionsItemLabelMax),
+  "labelAr": zod.string().nullish(),
+  "url": zod.string().max(publishGithubImportResponseItemActionsItemUrlMax),
+  "kind": zod.enum(['primary', 'secondary']).default(publishGithubImportResponseItemActionsItemKindDefault)
+})),
+  "media": zod.array(zod.object({
+  "url": zod.string().max(publishGithubImportResponseItemMediaItemUrlMax),
+  "kind": zod.enum(['image', 'gif', 'video', 'audio', 'icon']),
+  "alt": zod.string().nullish()
+})),
+  "status": zod.enum(['draft', 'published', 'archived']),
+  "featured": zod.boolean(),
+  "sortOrder": zod.number().int(),
+  "metadata": zod.record(zod.string(), zod.unknown()).optional(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+}),
+  "record": zod.object({
+  "id": zod.string(),
+  "repository": zod.string(),
+  "branch": zod.string(),
+  "status": zod.enum(['draft', 'published', 'archived', 'failed']),
+  "deploymentStatus": zod.string(),
+  "contentItemId": zod.string().nullable(),
+  "validation": zod.object({
+  "ok": zod.boolean(),
+  "issues": zod.array(zod.string())
+}),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string()
+})
+})
+
+
+/**
+ * Deletes the stored token. When the token was granted through OAuth the API also asks GitHub to revoke the grant; the outcome is reported.
+ * @summary Disconnect GitHub and delete the stored access token
+ */
+export const DisconnectGithubResponse = zod.object({
+  "connection": zod.object({
+  "connected": zod.boolean(),
+  "method": zod.enum(['oauth', 'token', 'none']),
+  "account": zod.string(),
+  "scopes": zod.array(zod.string()),
+  "connectedAt": zod.string().nullable(),
+  "oauthConfigured": zod.boolean(),
+  "encryptionReady": zod.boolean()
+}),
+  "imports": zod.array(zod.object({
+  "id": zod.string(),
+  "repository": zod.string(),
+  "branch": zod.string(),
+  "status": zod.enum(['draft', 'published', 'archived', 'failed']),
+  "deploymentStatus": zod.string(),
+  "contentItemId": zod.string().nullable(),
+  "validation": zod.object({
+  "ok": zod.boolean(),
+  "issues": zod.array(zod.string())
+}),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string()
+}))
 })
 
 

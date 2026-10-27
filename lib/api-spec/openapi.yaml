@@ -18,6 +18,11 @@ tags:
     description: Server-side AI assistant.
   - name: storage
     description: Secure media upload and object delivery.
+  - name: owner
+    description: >
+      Owner-only console operations: the Termux catalog, the GitHub project
+      integration and the startup-audio settings. Every endpoint here requires
+      the OWNER role and is enforced on the server.
 paths:
   /healthz:
     get:
@@ -615,6 +620,322 @@ paths:
           $ref: "#/components/responses/Forbidden"
         "404":
           $ref: "#/components/responses/NotFound"
+  /admin/termux:
+    get:
+      operationId: getTermuxConsole
+      tags: [owner]
+      summary: Owner-only Termux management console
+      description: >
+        Returns the owner's Termux catalog (projects, commands, scripts and
+        guides) together with an explicit statement of what this deployment can
+        and cannot execute. The web API never runs shell commands.
+      responses:
+        "200":
+          description: Termux catalog and execution capability.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TermuxConsole"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+    put:
+      operationId: updateTermuxConsole
+      tags: [owner]
+      summary: Replace the owner's Termux catalog
+      description: Stores the catalog entries. Nothing here is executed by the API.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TermuxConsoleUpdate"
+      responses:
+        "200":
+          description: Stored Termux catalog.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TermuxConsole"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /admin/termux/confirm:
+    post:
+      operationId: confirmTermuxCommand
+      tags: [owner]
+      summary: Record an explicit owner confirmation for a Termux entry
+      description: >
+        Writes an audit entry for the confirmed review of one catalog entry and
+        answers with the exact command to run locally. It never executes it:
+        no web endpoint of this application has shell access.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TermuxConfirmation"
+      responses:
+        "200":
+          description: Confirmation recorded; execution is not offered.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TermuxConfirmationResult"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /admin/github/status:
+    get:
+      operationId: getGithubIntegration
+      tags: [owner]
+      summary: Owner-only GitHub integration status
+      responses:
+        "200":
+          description: Connection state, tracked imports and capability flags.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GithubIntegration"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /admin/github/connect/start:
+    post:
+      operationId: startGithubConnect
+      tags: [owner]
+      summary: Begin the GitHub OAuth connection
+      description: >
+        Returns the GitHub authorize URL to open. Requires a registered GitHub
+        OAuth app; when it is not configured the response says so instead of
+        returning a broken link.
+      responses:
+        "200":
+          description: Authorize URL to open in the browser.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GithubConnectStart"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /admin/github/connect/token:
+    post:
+      operationId: connectGithubToken
+      tags: [owner]
+      summary: Connect GitHub with a scoped access token
+      description: >
+        Stores the supplied token encrypted, server-side only. The value is
+        never returned to the browser, never logged and can be revoked with
+        DELETE /admin/github/connection.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GithubTokenConnect"
+      responses:
+        "200":
+          description: Connection established.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GithubIntegration"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /admin/github/callback:
+    get:
+      operationId: completeGithubConnect
+      tags: [owner]
+      summary: GitHub OAuth callback
+      description: >
+        Exchanges the authorization code for a token (kept server-side) and
+        redirects the browser back to the owner console. Every failure is
+        reported as a redirect with a status query parameter, never as a
+        partial connection.
+      parameters:
+        - name: code
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: state
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        "302":
+          description: Redirect back to the owner console.
+  /admin/github/repositories:
+    get:
+      operationId: listGithubRepositories
+      tags: [owner]
+      summary: List repositories the connected account can read
+      responses:
+        "200":
+          description: Repositories visible to the connection.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/GithubRepositorySummary"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "502":
+          description: GitHub could not answer the request.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+  /admin/github/repositories/{owner}/{name}/branches:
+    get:
+      operationId: listGithubBranches
+      tags: [owner]
+      summary: List the branches of one repository
+      parameters:
+        - name: owner
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: name
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Branch names.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GithubBranchList"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "502":
+          description: GitHub could not answer the request.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+  /admin/github/preview:
+    post:
+      operationId: previewGithubImport
+      tags: [owner]
+      summary: Preview what an import would publish
+      description: >
+        Reads repository metadata, the README and the top-level file list of the
+        selected branch. Sensitive paths are never read and are reported as
+        skipped; nothing is written to the catalog by this call.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GithubImportRequest"
+      responses:
+        "200":
+          description: Preview of the import, nothing published yet.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GithubImportPreview"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "502":
+          description: GitHub could not answer the request.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+  /admin/github/publish:
+    post:
+      operationId: publishGithubImport
+      tags: [owner]
+      summary: Publish or update a reviewed repository in the catalog
+      description: >
+        Creates or updates the catalog entry for a repository. It saves a draft
+        unless the owner explicitly asks for publication, and it records the
+        import status.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GithubPublishRequest"
+      responses:
+        "201":
+          description: Catalog entry created or updated.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GithubPublishResult"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "502":
+          description: GitHub could not answer the request.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+  /admin/github/connection:
+    delete:
+      operationId: disconnectGithub
+      tags: [owner]
+      summary: Disconnect GitHub and delete the stored access token
+      description: >
+        Deletes the stored token. When the token was granted through OAuth the
+        API also asks GitHub to revoke the grant; the outcome is reported.
+      responses:
+        "200":
+          description: Disconnected; revocation outcome included.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GithubIntegration"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
 components:
   parameters:
     Id:
@@ -651,9 +972,18 @@ components:
             $ref: "#/components/schemas/ErrorEnvelope"
   schemas:
     HealthStatus:
+      description: >
+        Liveness and deployment facts. `runtime` and `storageDriver` come from
+        the environment the process booted with, so a deployment can be checked
+        without reading any secret.
       type: object
       properties:
         status:
+          type: string
+        runtime:
+          type: string
+          enum: [node, cloudflare-worker]
+        storageDriver:
           type: string
       required:
         - status
@@ -908,7 +1238,7 @@ components:
         identity: { $ref: "#/components/schemas/ThemeIdentity" }
     SiteSettings:
       type: object
-      required: [projectName, projectNameAr, tagline, taglineAr, defaultLocale, accentColor, reducedMotion, theme, android]
+      required: [projectName, projectNameAr, tagline, taglineAr, defaultLocale, accentColor, reducedMotion, theme, android, audio]
       properties:
         projectName:
           type: string
@@ -929,6 +1259,8 @@ components:
           $ref: "#/components/schemas/SiteTheme"
         android:
           $ref: "#/components/schemas/AndroidRelease"
+        audio:
+          $ref: "#/components/schemas/StartupAudio"
     AndroidRelease:
       description: >
         The published Android release. `apkUrl` stays empty until a real APK
@@ -1026,6 +1358,8 @@ components:
           $ref: "#/components/schemas/SiteThemeUpdate"
         android:
           $ref: "#/components/schemas/AndroidReleaseUpdate"
+        audio:
+          $ref: "#/components/schemas/StartupAudioUpdate"
     SiteThemeUpdate:
       type: object
       required: [colors, typography, identity]
@@ -1347,4 +1681,413 @@ components:
         createdAt:
           type: string
           format: date-time
+    TermuxEntryKind:
+      type: string
+      enum: [project, command, script, guide]
+    TermuxEntry:
+      description: >
+        One entry of the owner's Termux catalog. `command` is documentation the
+        owner reviews and runs on their own device; the API never executes it.
+      type: object
+      required: [id, kind, title, titleAr, summary, command, documentationUrl, requiresRoot, requiresStorage, enabled, notes]
+      properties:
+        id:
+          type: string
+          maxLength: 60
+        kind:
+          $ref: "#/components/schemas/TermuxEntryKind"
+        title:
+          type: string
+          maxLength: 160
+        titleAr:
+          type: ["string", "null"]
+          maxLength: 160
+        summary:
+          type: string
+          maxLength: 600
+        command:
+          type: string
+          maxLength: 4000
+        documentationUrl:
+          type: ["string", "null"]
+          maxLength: 2048
+        requiresRoot:
+          type: boolean
+        requiresStorage:
+          type: boolean
+        enabled:
+          type: boolean
+        notes:
+          type: ["string", "null"]
+          maxLength: 1000
+    TermuxCapability:
+      description: >
+        What this deployment can do with a catalog entry. `executionAvailable`
+        is false for every web deployment of this application, and the reason is
+        stated instead of hidden.
+      type: object
+      required: [executionAvailable, reason, localRunHint, supportedKinds]
+      properties:
+        executionAvailable:
+          type: boolean
+        reason:
+          type: string
+        localRunHint:
+          type: string
+        supportedKinds:
+          type: array
+          items:
+            type: string
+    TermuxConsole:
+      type: object
+      required: [intro, introAr, entries, capability, updatedAt]
+      properties:
+        intro:
+          type: string
+          maxLength: 600
+        introAr:
+          type: string
+          maxLength: 600
+        entries:
+          type: array
+          items:
+            $ref: "#/components/schemas/TermuxEntry"
+          maxItems: 100
+        capability:
+          $ref: "#/components/schemas/TermuxCapability"
+        updatedAt:
+          type: ["string", "null"]
+    TermuxConsoleUpdate:
+      type: object
+      required: [intro, introAr, entries]
+      properties:
+        intro:
+          type: string
+          maxLength: 600
+        introAr:
+          type: string
+          maxLength: 600
+        entries:
+          type: array
+          items:
+            $ref: "#/components/schemas/TermuxEntry"
+          maxItems: 100
+    TermuxConfirmation:
+      type: object
+      required: [entryId, confirmation]
+      properties:
+        entryId:
+          type: string
+          minLength: 1
+          maxLength: 60
+        confirmation:
+          type: boolean
+    TermuxConfirmationResult:
+      type: object
+      required: [entryId, recorded, executed, message, command]
+      properties:
+        entryId:
+          type: string
+        recorded:
+          type: boolean
+        executed:
+          type: boolean
+        message:
+          type: string
+        command:
+          type: string
+    GithubConnectionMethod:
+      type: string
+      enum: [oauth, token, none]
+    GithubConnection:
+      type: object
+      required: [connected, method, account, scopes, connectedAt, oauthConfigured, encryptionReady]
+      properties:
+        connected:
+          type: boolean
+        method:
+          $ref: "#/components/schemas/GithubConnectionMethod"
+        account:
+          type: string
+        scopes:
+          type: array
+          items:
+            type: string
+        connectedAt:
+          type: ["string", "null"]
+        oauthConfigured:
+          type: boolean
+        encryptionReady:
+          type: boolean
+    GithubImportRecordStatus:
+      type: string
+      enum: [draft, published, archived, failed]
+    GithubImportValidation:
+      type: object
+      required: [ok, issues]
+      properties:
+        ok:
+          type: boolean
+        issues:
+          type: array
+          items:
+            type: string
+    GithubImportRecord:
+      type: object
+      required: [id, repository, branch, status, deploymentStatus, contentItemId, validation, createdAt, updatedAt]
+      properties:
+        id:
+          type: string
+        repository:
+          type: string
+        branch:
+          type: string
+        status:
+          $ref: "#/components/schemas/GithubImportRecordStatus"
+        deploymentStatus:
+          type: string
+        contentItemId:
+          type: ["string", "null"]
+        validation:
+          $ref: "#/components/schemas/GithubImportValidation"
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+    GithubIntegration:
+      type: object
+      required: [connection, imports]
+      properties:
+        connection:
+          $ref: "#/components/schemas/GithubConnection"
+        imports:
+          type: array
+          items:
+            $ref: "#/components/schemas/GithubImportRecord"
+    GithubConnectStart:
+      type: object
+      required: [authorizeUrl, scopes, message]
+      properties:
+        authorizeUrl:
+          type: string
+        scopes:
+          type: array
+          items:
+            type: string
+        message:
+          type: string
+    GithubTokenConnect:
+      type: object
+      required: [token]
+      properties:
+        token:
+          type: string
+          minLength: 8
+          maxLength: 400
+    GithubRepositorySummary:
+      type: object
+      required: [id, fullName, name, owner, private, defaultBranch, description, language, stars, forks, updatedAt, htmlUrl, access]
+      properties:
+        id:
+          type: integer
+        fullName:
+          type: string
+        name:
+          type: string
+        owner:
+          type: string
+        private:
+          type: boolean
+        defaultBranch:
+          type: string
+        description:
+          type: ["string", "null"]
+        language:
+          type: ["string", "null"]
+        stars:
+          type: integer
+        forks:
+          type: integer
+        updatedAt:
+          type: ["string", "null"]
+        htmlUrl:
+          type: string
+        access:
+          type: string
+          enum: [admin, push, pull, none]
+    GithubBranchList:
+      type: object
+      required: [branches]
+      properties:
+        branches:
+          type: array
+          items:
+            type: string
+    GithubImportRequest:
+      type: object
+      required: [repository, branch]
+      properties:
+        repository:
+          type: string
+          minLength: 3
+          maxLength: 200
+        branch:
+          type: string
+          minLength: 1
+          maxLength: 200
+    GithubImportAsset:
+      type: object
+      required: [path, type, size]
+      properties:
+        path:
+          type: string
+        type:
+          type: string
+        size:
+          type: integer
+    GithubImportPreview:
+      type: object
+      required: [repository, branch, title, description, readme, readmeUrl, topics, language, stars, forks, assets, skippedSensitive, warnings, existingContentItemId]
+      properties:
+        repository:
+          type: string
+        branch:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+        readme:
+          type: string
+        readmeUrl:
+          type: ["string", "null"]
+        topics:
+          type: array
+          items:
+            type: string
+        language:
+          type: ["string", "null"]
+        stars:
+          type: integer
+        forks:
+          type: integer
+        assets:
+          type: array
+          items:
+            $ref: "#/components/schemas/GithubImportAsset"
+        skippedSensitive:
+          type: array
+          items:
+            type: string
+        warnings:
+          type: array
+          items:
+            type: string
+        existingContentItemId:
+          type: ["string", "null"]
+    GithubPublishRequest:
+      type: object
+      required: [repository, branch, title, description, category, tags, publish]
+      properties:
+        repository:
+          type: string
+          minLength: 3
+          maxLength: 200
+        branch:
+          type: string
+          minLength: 1
+          maxLength: 200
+        title:
+          type: string
+          minLength: 1
+          maxLength: 160
+        description:
+          type: string
+          maxLength: 4000
+        category:
+          type: string
+          minLength: 1
+          maxLength: 80
+        tags:
+          type: array
+          items:
+            type: string
+            maxLength: 40
+          maxItems: 30
+        publish:
+          type: boolean
+    GithubPublishResult:
+      type: object
+      required: [item, record]
+      properties:
+        item:
+          $ref: "#/components/schemas/ContentItem"
+        record:
+          $ref: "#/components/schemas/GithubImportRecord"
+    StartupAudio:
+      description: >
+        Optional startup audio. `enabled` alone never plays anything: the client
+        also needs a real audio URL, the owner's autoplay setting and the
+        visitor's own consent — the browser autoplay policy, the visitor's
+        stored mute choice and the reduced-motion preference are all respected.
+      type: object
+      required: [enabled, autoplay, muteByDefault, volume, title, artist, url, contentType, sizeBytes, updatedAt]
+      properties:
+        enabled:
+          type: boolean
+        autoplay:
+          type: boolean
+        muteByDefault:
+          type: boolean
+        volume:
+          type: number
+          minimum: 0
+          maximum: 1
+        title:
+          type: string
+          maxLength: 120
+        artist:
+          type: string
+          maxLength: 120
+        url:
+          type: string
+          maxLength: 2048
+        contentType:
+          type: string
+          maxLength: 80
+        sizeBytes:
+          type: integer
+          minimum: 0
+          maximum: 12582912
+        updatedAt:
+          type: ["string", "null"]
+    StartupAudioUpdate:
+      type: object
+      properties:
+        enabled:
+          type: boolean
+        autoplay:
+          type: boolean
+        muteByDefault:
+          type: boolean
+        volume:
+          type: number
+          minimum: 0
+          maximum: 1
+        title:
+          type: string
+          maxLength: 120
+        artist:
+          type: string
+          maxLength: 120
+        url:
+          type: string
+          maxLength: 2048
+        contentType:
+          type: string
+          maxLength: 80
+        sizeBytes:
+          type: integer
+          minimum: 0
+          maximum: 12582912
 

@@ -8,6 +8,7 @@
 import type { AndroidReleaseUpdate } from './androidReleaseUpdate';
 import type { SiteSettingsUpdateDefaultLocale } from './siteSettingsUpdateDefaultLocale';
 import type { SiteThemeUpdate } from './siteThemeUpdate';
+import type { StartupAudioUpdate } from './startupAudioUpdate';
 
 export interface SiteSettingsUpdate {
   /**
@@ -30,4 +31,5 @@ export interface SiteSettingsUpdate {
   reducedMotion: boolean;
   theme: SiteThemeUpdate;
   android?: AndroidReleaseUpdate;
+  audio?: StartupAudioUpdate;
 }

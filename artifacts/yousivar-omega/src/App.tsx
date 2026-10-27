@@ -13,6 +13,10 @@ import {
 import { Button, Field, Heading, PageLoader, QueryError, Saved, Toggle } from '@/components/admin-ui';
 import { AndroidDownload } from '@/components/android-download';
 import AdminAndroidPage from '@/pages/admin-android';
+import AdminTermuxPage from '@/pages/admin-termux';
+import AdminGithubPage from '@/pages/admin-github';
+import AdminAudioPage from '@/pages/admin-audio';
+import { StartupAudioPlayer } from '@/components/startup-audio';
 import {
   getGetAdminIdentityQueryKey, getGetAdminProfileQueryKey, getGetAdminSettingsQueryKey,
   getGetAssistantSettingsQueryKey, getGetPublicSiteQueryKey, getGetAdminSummaryQueryKey,
@@ -186,6 +190,7 @@ function Home() {
       <div className="mt-16 grid gap-px overflow-hidden rounded-2xl border border-[var(--omega-border)] bg-white/10 sm:grid-cols-3">{[['01','Independent by design','Private tools, public proof.'],['02','Built to evolve','Content and identity belong to their owner.'],['03','Made for the long run','A focused system, not another feed.']].map(([n,t,d])=><div key={n} className="bg-[var(--omega-background)] p-7 sm:p-9"><span className="eyebrow text-[var(--omega-secondary)]">{n}</span><h3 className="mt-8 text-lg text-zinc-200">{t}</h3><p className="mt-2 text-sm text-[var(--omega-muted-soft)]">{d}</p></div>)}</div>
     </section>
     <AndroidDownload release={settings?.android} rtl={rtl} projectName={settings?.projectName || 'YOUSIVAR–Ω'}/>
+    <StartupAudioPlayer audio={settings?.audio} rtl={rtl}/>
     <footer className="border-t border-[var(--omega-border)] px-5 py-8 sm:px-10"><div className="mx-auto flex max-w-[1440px] flex-col justify-between gap-4 text-xs text-[var(--omega-muted-faint)] sm:flex-row"><span className="eyebrow">YOUSIVAR–Ω / PRIVATE BY NATURE</span><span>© {new Date().getFullYear()} · Built with clarity.</span></div></footer>
     <OwnerAuthModal open={ownerOpen} onClose={()=>setOwnerOpen(false)} onAuthenticated={()=>{setOwnerOpen(false);qc.clear();setLocation('/admin');}}/>
   </main>;
@@ -199,10 +204,17 @@ const navigation = [
   { href: '/admin/settings', label: 'Settings', icon: Settings2 },
   { href: '/admin/android', label: 'Android', icon: Smartphone },
   { href: '/admin/ai', label: 'AI studio', icon: Bot },
+  { href: '/admin/termux', label: 'Termux', icon: TerminalSquare },
+  { href: '/admin/github', label: 'GitHub', icon: Github },
+  { href: '/admin/audio', label: 'Startup audio', icon: AudioLines },
   { href: '/admin/users', label: 'Access', icon: Users },
   { href: '/admin/activity', label: 'Activity', icon: Activity },
 ];
-function AdminShell({ children }: { children: ReactNode }) {
+// Sections only the OWNER role may open. The API enforces this on every route
+// (`requireOwner`); hiding the link is only so nobody sees a door they cannot
+// walk through.
+const ownerOnlySections = new Set(['/admin/termux', '/admin/github', '/admin/audio']);
+function AdminShell({ children, isOwner = false }: { children: ReactNode; isOwner?: boolean }) {
   const [path, setLocation] = useLocation();
   const [open, setOpen] = useState(false);
   const { locale, setLocale } = useLocale();
@@ -219,7 +231,7 @@ function AdminShell({ children }: { children: ReactNode }) {
   return <div dir={rtl ? 'rtl' : 'ltr'} className="grain min-h-[100dvh] bg-[var(--omega-background)] text-[var(--omega-text)] md:grid md:grid-cols-[248px_1fr]">
     <aside className={`fixed inset-y-0 left-0 z-30 flex w-[260px] flex-col border-r border-[var(--omega-border)] bg-[var(--omega-surface)] px-5 py-6 transition-transform md:sticky md:top-0 md:h-[100dvh] md:translate-x-0 rtl:right-0 rtl:left-auto rtl:border-r-0 rtl:border-l ${open ? 'translate-x-0' : '-translate-x-full rtl:translate-x-full'}`}>
       <div className="flex items-center justify-between"><Link href="/" className="flex items-center gap-3" data-testid="link-console-home"><span className="grid h-9 w-9 place-items-center rounded-xl border border-[var(--omega-border)] bg-white/[.04] font-serif"><LogoMark theme={theme} className="text-base"/></span><span><span className="block text-sm tracking-wide">YOUSIVAR–Ω</span><span className="eyebrow block pt-1 text-[8px] text-[var(--omega-muted-faint)]">CONTROL ROOM</span></span></Link><button className="md:hidden" onClick={()=>setOpen(false)} aria-label="Close menu"><X size={17}/></button></div>
-      <p className="eyebrow mb-3 mt-12 text-[var(--omega-muted-faint)]">Workspace</p><nav className="space-y-1">{navigation.map(({href,label,icon:Icon})=><Link key={href} href={href} onClick={()=>setOpen(false)} data-testid={`nav-${label.toLowerCase().replaceAll(' ','-')}`} className={`flex items-center gap-3 rounded-xl px-3 py-3 text-sm transition ${path === href ? 'bg-white/[.09] text-[var(--omega-text)]' : 'text-[var(--omega-muted-soft)] hover:bg-white/[.04] hover:text-zinc-200'}`}><Icon size={16} strokeWidth={1.6}/>{label}{path===href&&<span className="ml-auto h-1.5 w-1.5 rounded-full bg-[var(--omega-accent)]"/>}</Link>)}</nav>
+      <p className="eyebrow mb-3 mt-12 text-[var(--omega-muted-faint)]">Workspace</p><nav className="space-y-1">{navigation.filter(item => isOwner || !ownerOnlySections.has(item.href)).map(({href,label,icon:Icon})=><Link key={href} href={href} onClick={()=>setOpen(false)} data-testid={`nav-${label.toLowerCase().replaceAll(' ','-')}`} className={`flex items-center gap-3 rounded-xl px-3 py-3 text-sm transition ${path === href ? 'bg-white/[.09] text-[var(--omega-text)]' : 'text-[var(--omega-muted-soft)] hover:bg-white/[.04] hover:text-zinc-200'}`}><Icon size={16} strokeWidth={1.6}/>{label}{path===href&&<span className="ml-auto h-1.5 w-1.5 rounded-full bg-[var(--omega-accent)]"/>}</Link>)}</nav>
       <div className="mt-auto rounded-2xl border border-[var(--omega-border)] bg-white/[.025] p-4"><div className="mb-3 flex items-center gap-2 text-xs text-zinc-300"><ShieldCheck size={14} className="text-[var(--omega-accent)]"/>Permission-aware</div><p className="text-[11px] leading-5 text-[var(--omega-muted-faint)]">Access is granted by your application role and permissions.</p><Link href="/" className="mt-4 inline-flex items-center gap-2 text-xs text-[var(--omega-muted)] hover:text-[var(--omega-highlight)]">View public site<ArrowUpRight size={13}/></Link></div>
     </aside>
     {open&&<button className="fixed inset-0 z-20 bg-black/60 md:hidden" onClick={()=>setOpen(false)} aria-label="Close navigation overlay"/>}
@@ -236,7 +248,7 @@ function AdminGate({ children, permission }: { children: ReactNode; permission?:
   if (identity.isError || !identity.data) return <div className="grain grid min-h-[100dvh] place-items-center bg-[var(--omega-background)] px-5 text-[var(--omega-text)]"><div className="max-w-lg rounded-3xl border border-[var(--omega-border)] bg-white/[.035] p-8 text-center"><ShieldCheck className="mx-auto h-8 w-8 text-[var(--omega-accent)]"/><p className="eyebrow mt-5 text-[var(--omega-muted-soft)]">Permission required</p><h1 className="display mt-3 text-4xl">This workspace is private.</h1><p className="mt-3 text-sm leading-6 text-[var(--omega-muted-soft)]">Owner access runs the Ω flow: authorized email, owner credentials, then a one-time code. A Clerk session alone does not grant access.</p><div className="mt-6 flex flex-wrap justify-center gap-2"><button type="button" onClick={()=>setOwnerOpen(true)} className="focus-ring inline-flex rounded-full bg-[var(--omega-primary)] px-5 py-3 text-sm font-medium text-[var(--omega-background)]" data-testid="button-owner-access">Owner access (Ω)</button><Link href="/sign-in" className="inline-flex rounded-full border border-[var(--omega-border)] px-5 py-3 text-sm text-zinc-200" data-testid="link-sign-in">Continue to sign in</Link></div><div className="mt-5 text-xs text-[var(--omega-muted-faint)]">{identity.error instanceof Error ? identity.error.message : 'Access was not granted by the API.'}</div></div><OwnerAuthModal open={ownerOpen} onClose={()=>setOwnerOpen(false)} onAuthenticated={()=>{setOwnerOpen(false);void identity.refetch();}}/></div>;
   if (!identity.data.permissions?.length) return <div className="grain grid min-h-[100dvh] place-items-center bg-[var(--omega-background)] p-6 text-center text-[var(--omega-muted)]"><div><ShieldCheck className="mx-auto h-8 w-8"/><h1 className="display mt-4 text-4xl">No permissions assigned</h1><p className="mt-3 text-sm">Your authenticated identity does not currently have application permissions.</p></div></div>;
   if (permission && !identity.data.permissions.includes(permission)) return <div className="grain grid min-h-[100dvh] place-items-center bg-[var(--omega-background)] p-6 text-center text-[var(--omega-muted)]"><div><ShieldCheck className="mx-auto h-8 w-8"/><p className="eyebrow mt-5 text-[var(--omega-muted-faint)]">Permission boundary</p><h1 className="display mt-3 text-4xl">Access is not assigned.</h1><p className="mt-3 text-sm">This section requires <code className="text-zinc-300">{permission}</code>.</p><Link href="/admin" className="mt-6 inline-flex rounded-full border border-[var(--omega-border)] px-5 py-3 text-sm text-zinc-200">Return to overview</Link></div></div>;
-  return <AdminShell>{children}</AdminShell>;
+  return <AdminShell isOwner={identity.data.role === 'OWNER'}>{children}</AdminShell>;
 }
 function AdminDashboard() {
   const identity = useGetAdminIdentity();
@@ -469,6 +481,9 @@ function ClerkRoutes() {
       <Route path="/admin/settings" component={()=> <Protected page={SettingsPage} permission="settings:write"/>}/>
       <Route path="/admin/android" component={()=> <Protected page={AdminAndroidPage} permission="settings:write"/>}/>
       <Route path="/admin/ai" component={()=> <Protected page={AiPage} permission="integrations:write"/>}/>
+      <Route path="/admin/termux" component={()=> <Protected page={AdminTermuxPage} permission="users:manage"/>}/>
+      <Route path="/admin/github" component={()=> <Protected page={AdminGithubPage} permission="users:manage"/>}/>
+      <Route path="/admin/audio" component={()=> <Protected page={AdminAudioPage} permission="users:manage"/>}/>
       <Route path="/admin/users" component={()=> <Protected page={UsersPage} permission="users:manage"/>}/>
       <Route path="/admin/activity" component={()=> <Protected page={ActivityPage} permission="audit:read"/>}/>
       <Route component={NotFound}/>
