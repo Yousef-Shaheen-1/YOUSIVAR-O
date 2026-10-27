@@ -7,7 +7,7 @@
 # /robots.txt are still served as real files.
 #
 # /api/* never reaches Pages: the API Worker owns that path through a Worker
-# route on the same hostname (see artifacts/api-server/wrangler.jsonc). That
-# single-origin wiring is mandatory — the owner session cookie, the Clerk
-# session and the API's same-origin write guard all depend on it.
+# route on the same hostname. That single-origin wiring is mandatory — the owner
+# session cookie, the Clerk session and the API's same-origin write guard all
+# depend on it.
 /*  /index.html  200

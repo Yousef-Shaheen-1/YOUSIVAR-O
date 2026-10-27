@@ -1,9 +1,8 @@
-# Response headers for Cloudflare Pages (dist/public/_headers).
+# Cloudflare Pages static asset and APK handling
 #
 # Cloudflare derives a static asset's Content-Type from its file extension, and
 # `.apk` is not a known extension, so this rule pins the Android package type
-# explicitly. `functions/downloads/[file].ts` sets it on the response as well,
-# which is the guaranteed path — see CLOUDFLARE.md before removing either one.
+# explicitly. Keep the rule in place to preserve APK downloads.
 
 /*
   X-Content-Type-Options: nosniff
