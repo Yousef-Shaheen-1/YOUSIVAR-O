@@ -38,7 +38,8 @@ jobs:
         run: pnpm run build
 
       - name: Deploy to Cloudflare Pages
+        working-directory: artifacts/yousivar-omega
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-        run: pnpm dlx wrangler@4 pages deploy artifacts/yousivar-omega/dist/public --project-name=yousivar-omega
+        run: pnpm dlx wrangler@4 pages deploy dist/public --project-name=yousivar-omega
