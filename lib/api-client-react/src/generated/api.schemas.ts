@@ -5,8 +5,21 @@
  * YOUSIVAR–Ω public content, owner administration, and integration API.
  * OpenAPI spec version: 0.1.0
  */
+export type HealthStatusRuntime = typeof HealthStatusRuntime[keyof typeof HealthStatusRuntime];
+
+
+export const HealthStatusRuntime = {
+  node: 'node',
+  'cloudflare-worker': 'cloudflare-worker',
+} as const;
+
+/**
+ * Liveness and deployment facts. `runtime` and `storageDriver` come from the environment the process booted with, so a deployment can be checked without reading any secret.
+ */
 export interface HealthStatus {
   status: string;
+  runtime?: HealthStatusRuntime;
+  storageDriver?: string;
 }
 
 export interface ErrorEnvelope {
@@ -339,6 +352,35 @@ export interface AndroidRelease {
   debugBuild: boolean;
 }
 
+/**
+ * Optional startup audio. `enabled` alone never plays anything: the client also needs a real audio URL, the owner's autoplay setting and the visitor's own consent — the browser autoplay policy, the visitor's stored mute choice and the reduced-motion preference are all respected.
+ */
+export interface StartupAudio {
+  enabled: boolean;
+  autoplay: boolean;
+  muteByDefault: boolean;
+  /**
+     * @minimum 0
+     * @maximum 1
+     */
+  volume: number;
+  /** @maxLength 120 */
+  title: string;
+  /** @maxLength 120 */
+  artist: string;
+  /** @maxLength 2048 */
+  url: string;
+  /** @maxLength 80 */
+  contentType: string;
+  /**
+     * @minimum 0
+     * @maximum 12582912
+     */
+  sizeBytes: number;
+  /** @nullable */
+  updatedAt: string | null;
+}
+
 export interface SiteSettings {
   projectName: string;
   projectNameAr: string;
@@ -349,6 +391,7 @@ export interface SiteSettings {
   reducedMotion: boolean;
   theme: SiteTheme;
   android: AndroidRelease;
+  audio: StartupAudio;
 }
 
 export interface AndroidReleaseUpdate {
@@ -397,6 +440,30 @@ export interface SiteThemeUpdate {
   identity: ThemeIdentity;
 }
 
+export interface StartupAudioUpdate {
+  enabled?: boolean;
+  autoplay?: boolean;
+  muteByDefault?: boolean;
+  /**
+     * @minimum 0
+     * @maximum 1
+     */
+  volume?: number;
+  /** @maxLength 120 */
+  title?: string;
+  /** @maxLength 120 */
+  artist?: string;
+  /** @maxLength 2048 */
+  url?: string;
+  /** @maxLength 80 */
+  contentType?: string;
+  /**
+     * @minimum 0
+     * @maximum 12582912
+     */
+  sizeBytes?: number;
+}
+
 export interface SiteSettingsUpdate {
   /**
      * @minLength 1
@@ -418,6 +485,7 @@ export interface SiteSettingsUpdate {
   reducedMotion: boolean;
   theme: SiteThemeUpdate;
   android?: AndroidReleaseUpdate;
+  audio?: StartupAudioUpdate;
 }
 
 export interface SocialLink {
@@ -718,6 +786,272 @@ export interface MediaAsset {
   createdAt: string;
 }
 
+export type TermuxEntryKind = typeof TermuxEntryKind[keyof typeof TermuxEntryKind];
+
+
+export const TermuxEntryKind = {
+  project: 'project',
+  command: 'command',
+  script: 'script',
+  guide: 'guide',
+} as const;
+
+/**
+ * One entry of the owner's Termux catalog. `command` is documentation the owner reviews and runs on their own device; the API never executes it.
+ */
+export interface TermuxEntry {
+  /** @maxLength 60 */
+  id: string;
+  kind: TermuxEntryKind;
+  /** @maxLength 160 */
+  title: string;
+  /**
+     * @maxLength 160
+     * @nullable
+     */
+  titleAr: string | null;
+  /** @maxLength 600 */
+  summary: string;
+  /** @maxLength 4000 */
+  command: string;
+  /**
+     * @maxLength 2048
+     * @nullable
+     */
+  documentationUrl: string | null;
+  requiresRoot: boolean;
+  requiresStorage: boolean;
+  enabled: boolean;
+  /**
+     * @maxLength 1000
+     * @nullable
+     */
+  notes: string | null;
+}
+
+/**
+ * What this deployment can do with a catalog entry. `executionAvailable` is false for every web deployment of this application, and the reason is stated instead of hidden.
+ */
+export interface TermuxCapability {
+  executionAvailable: boolean;
+  reason: string;
+  localRunHint: string;
+  supportedKinds: string[];
+}
+
+export interface TermuxConsole {
+  /** @maxLength 600 */
+  intro: string;
+  /** @maxLength 600 */
+  introAr: string;
+  /** @maxItems 100 */
+  entries: TermuxEntry[];
+  capability: TermuxCapability;
+  /** @nullable */
+  updatedAt: string | null;
+}
+
+export interface TermuxConsoleUpdate {
+  /** @maxLength 600 */
+  intro: string;
+  /** @maxLength 600 */
+  introAr: string;
+  /** @maxItems 100 */
+  entries: TermuxEntry[];
+}
+
+export interface TermuxConfirmation {
+  /**
+     * @minLength 1
+     * @maxLength 60
+     */
+  entryId: string;
+  confirmation: boolean;
+}
+
+export interface TermuxConfirmationResult {
+  entryId: string;
+  recorded: boolean;
+  executed: boolean;
+  message: string;
+  command: string;
+}
+
+export type GithubConnectionMethod = typeof GithubConnectionMethod[keyof typeof GithubConnectionMethod];
+
+
+export const GithubConnectionMethod = {
+  oauth: 'oauth',
+  token: 'token',
+  none: 'none',
+} as const;
+
+export interface GithubConnection {
+  connected: boolean;
+  method: GithubConnectionMethod;
+  account: string;
+  scopes: string[];
+  /** @nullable */
+  connectedAt: string | null;
+  oauthConfigured: boolean;
+  encryptionReady: boolean;
+}
+
+export type GithubImportRecordStatus = typeof GithubImportRecordStatus[keyof typeof GithubImportRecordStatus];
+
+
+export const GithubImportRecordStatus = {
+  draft: 'draft',
+  published: 'published',
+  archived: 'archived',
+  failed: 'failed',
+} as const;
+
+export interface GithubImportValidation {
+  ok: boolean;
+  issues: string[];
+}
+
+export interface GithubImportRecord {
+  id: string;
+  repository: string;
+  branch: string;
+  status: GithubImportRecordStatus;
+  deploymentStatus: string;
+  /** @nullable */
+  contentItemId: string | null;
+  validation: GithubImportValidation;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface GithubIntegration {
+  connection: GithubConnection;
+  imports: GithubImportRecord[];
+}
+
+export interface GithubConnectStart {
+  authorizeUrl: string;
+  scopes: string[];
+  message: string;
+}
+
+export interface GithubTokenConnect {
+  /**
+     * @minLength 8
+     * @maxLength 400
+     */
+  token: string;
+}
+
+export type GithubRepositorySummaryAccess = typeof GithubRepositorySummaryAccess[keyof typeof GithubRepositorySummaryAccess];
+
+
+export const GithubRepositorySummaryAccess = {
+  admin: 'admin',
+  push: 'push',
+  pull: 'pull',
+  none: 'none',
+} as const;
+
+export interface GithubRepositorySummary {
+  id: number;
+  fullName: string;
+  name: string;
+  owner: string;
+  private: boolean;
+  defaultBranch: string;
+  /** @nullable */
+  description: string | null;
+  /** @nullable */
+  language: string | null;
+  stars: number;
+  forks: number;
+  /** @nullable */
+  updatedAt: string | null;
+  htmlUrl: string;
+  access: GithubRepositorySummaryAccess;
+}
+
+export interface GithubBranchList {
+  branches: string[];
+}
+
+export interface GithubImportRequest {
+  /**
+     * @minLength 3
+     * @maxLength 200
+     */
+  repository: string;
+  /**
+     * @minLength 1
+     * @maxLength 200
+     */
+  branch: string;
+}
+
+export interface GithubImportAsset {
+  path: string;
+  type: string;
+  size: number;
+}
+
+export interface GithubImportPreview {
+  repository: string;
+  branch: string;
+  title: string;
+  description: string;
+  readme: string;
+  /** @nullable */
+  readmeUrl: string | null;
+  topics: string[];
+  /** @nullable */
+  language: string | null;
+  stars: number;
+  forks: number;
+  assets: GithubImportAsset[];
+  skippedSensitive: string[];
+  warnings: string[];
+  /** @nullable */
+  existingContentItemId: string | null;
+}
+
+export interface GithubPublishRequest {
+  /**
+     * @minLength 3
+     * @maxLength 200
+     */
+  repository: string;
+  /**
+     * @minLength 1
+     * @maxLength 200
+     */
+  branch: string;
+  /**
+     * @minLength 1
+     * @maxLength 160
+     */
+  title: string;
+  /** @maxLength 4000 */
+  description: string;
+  /**
+     * @minLength 1
+     * @maxLength 80
+     */
+  category: string;
+  /**
+     * @maxItems 30
+     * @items.maxLength 40
+     */
+  tags: string[];
+  publish: boolean;
+}
+
+export interface GithubPublishResult {
+  item: ContentItem;
+  record: GithubImportRecord;
+}
+
 /**
  * Invalid request.
  */
@@ -783,4 +1117,9 @@ export const ListAdminContentStatus = {
   published: 'published',
   archived: 'archived',
 } as const;
+
+export type CompleteGithubConnectParams = {
+code?: string;
+state?: string;
+};
 

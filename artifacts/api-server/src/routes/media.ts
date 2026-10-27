@@ -3,11 +3,11 @@ import sanitizeHtml from "sanitize-html";
 import { CompleteMediaUploadBody, CompleteMediaUploadResponse } from "@workspace/api-zod";
 import { db, mediaAssets } from "@workspace/db";
 import { requirePermission } from "../middlewares/auth";
-import { ObjectStorageService } from "../lib/objectStorage";
+import { createObjectStorageService } from "../lib/cloudflare/objectStorageFactory";
 import { writeAudit } from "../lib/yousivar";
 
 const router: IRouter = Router();
-const storage = new ObjectStorageService();
+const storage = createObjectStorageService();
 const MAX_UPLOAD_BYTES = 50 * 1024 * 1024;
 
 const SVG_TAGS = [
@@ -74,12 +74,12 @@ router.post(
 
     try {
       const file = await storage.getObjectEntityFile(objectPath);
-      const [metadata] = await file.getMetadata();
-      if (Number(metadata.size) !== size || metadata.contentType !== contentType) {
+      const metadata = await storage.readObjectMetadata(file);
+      if (metadata.size !== size || metadata.contentType !== contentType) {
         res.status(400).json({ error: "Uploaded file metadata does not match the declared file" });
         return;
       }
-      const [buffer] = await file.download();
+      const buffer = await storage.readObjectBytes(file);
       if (buffer.byteLength !== size || !matchesFileSignature(buffer, contentType)) {
         res.status(400).json({ error: "Uploaded file signature does not match an allowed media type" });
         return;
@@ -102,11 +102,11 @@ router.post(
           res.status(400).json({ error: "SVG sanitization removed unsafe or invalid content" });
           return;
         }
-        await file.save(Buffer.from(sanitized, "utf8"), {
-          resumable: false,
-          contentType: "image/svg+xml",
-          metadata: { contentType: "image/svg+xml" },
-        });
+        await storage.writeObjectBytes(
+          file,
+          Buffer.from(sanitized, "utf8"),
+          "image/svg+xml",
+        );
       }
 
       await storage.trySetObjectEntityAclPolicy(objectPath, {

@@ -1,10 +1,9 @@
 import { eq } from "drizzle-orm";
 import { db, siteRecords, type MediaReference } from "@workspace/db";
-import {
-  ObjectStorageService,
-  type ObjectStorageService as StorageService,
-} from "./objectStorage";
+import { createObjectStorageService } from "./cloudflare/objectStorageFactory";
+import type { ObjectStorageBackend as StorageService } from "./cloudflare/objectStorageBackend";
 import { DEFAULT_THEME, mergeSiteTheme, type SiteTheme } from "./theme";
+import { DEFAULT_STARTUP_AUDIO, mergeStartupAudio, type StartupAudio } from "./startupAudio";
 
 /**
  * The published Android release, described by the owner. `apkUrl` stays empty
@@ -35,6 +34,7 @@ export type SiteSettings = {
   reducedMotion: boolean;
   theme: SiteTheme;
   android: AndroidRelease;
+  audio: StartupAudio;
 };
 
 export const SITE_SETTINGS_KEY = "site-settings";
@@ -102,6 +102,7 @@ export const DEFAULT_SITE_SETTINGS: SiteSettings = {
   reducedMotion: false,
   theme: DEFAULT_THEME,
   android: DEFAULT_ANDROID_RELEASE,
+  audio: DEFAULT_STARTUP_AUDIO,
 };
 
 /** A stored release completed with defaults; a settings write can omit it. */
@@ -130,6 +131,7 @@ export async function readSiteSettings(): Promise<SiteSettings> {
     ...stored,
     theme: mergeSiteTheme(stored?.theme),
     android: mergeAndroidRelease(stored?.android),
+    audio: mergeStartupAudio(stored?.audio),
   };
 }
 
@@ -218,7 +220,7 @@ export async function setMediaVisibility(
   media: MediaReference[],
   ownerId: string,
   visibility: "public" | "private",
-  storage: StorageService = new ObjectStorageService(),
+  storage: StorageService = createObjectStorageService(),
 ): Promise<void> {
   const paths = new Set(
     media

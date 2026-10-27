@@ -43,8 +43,22 @@ export class EmailDeliveryError extends Error {
 const NOT_CONFIGURED_MESSAGE =
   "Email delivery is not configured, so no verification code was sent. Set RESEND_API_KEY, or SMTP_HOST with SMTP_USER and SMTP_PASSWORD, as app secrets.";
 
+/**
+ * The Workers runtime has no raw TCP/TLS sockets, so the hand-written SMTP
+ * transport cannot run on Cloudflare at all — only the Resend HTTP transport can.
+ * Reported explicitly rather than silently falling back, so the owner access
+ * flow tells the truth about why no code arrived.
+ */
+const WORKERS_NO_PROVIDER_MESSAGE =
+  "Email delivery is not configured, so no verification code was sent. Cloudflare Workers cannot use SMTP (the runtime has no raw TCP sockets) — set RESEND_API_KEY as an app secret instead.";
+
 const DELIVERY_FAILED_MESSAGE =
   "The verification email could not be delivered, so no working code was issued. Check the mail provider configuration and try again.";
+
+/** False inside a Cloudflare Worker, where a raw SMTP socket is impossible. */
+function smtpAvailable(): boolean {
+  return process.env.CLOUDFLARE_WORKER !== "1";
+}
 
 type SmtpSettings = {
   host: string;
@@ -84,7 +98,7 @@ export function emailReadiness(): EmailReadiness {
       detail: "Verification codes are delivered through Resend.",
     };
   }
-  const smtp = smtpSettings();
+  const smtp = smtpAvailable() ? smtpSettings() : null;
   if (smtp) {
     return {
       configured: true,
@@ -92,7 +106,13 @@ export function emailReadiness(): EmailReadiness {
       detail: `Verification codes are delivered over SMTP (${smtp.host}:${smtp.port}).`,
     };
   }
-  return { configured: false, provider: null, detail: NOT_CONFIGURED_MESSAGE };
+  return {
+    configured: false,
+    provider: null,
+    detail: smtpAvailable()
+      ? NOT_CONFIGURED_MESSAGE
+      : WORKERS_NO_PROVIDER_MESSAGE,
+  };
 }
 
 export async function sendEmail(message: OutgoingEmail): Promise<EmailProvider> {
@@ -100,12 +120,14 @@ export async function sendEmail(message: OutgoingEmail): Promise<EmailProvider> 
     await sendViaResend(process.env.RESEND_API_KEY.trim(), message);
     return "resend";
   }
-  const smtp = smtpSettings();
+  const smtp = smtpAvailable() ? smtpSettings() : null;
   if (smtp) {
     await sendViaSmtp(smtp, message);
     return "smtp";
   }
-  throw new EmailDeliveryError(NOT_CONFIGURED_MESSAGE);
+  throw new EmailDeliveryError(
+    smtpAvailable() ? NOT_CONFIGURED_MESSAGE : WORKERS_NO_PROVIDER_MESSAGE,
+  );
 }
 
 async function sendViaResend(apiKey: string, message: OutgoingEmail): Promise<void> {

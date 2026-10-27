@@ -47,8 +47,10 @@ import {
   type DeveloperProfile,
 } from "../lib/yousivar";
 import { mergeSiteTheme } from "../lib/theme";
+import { audioValidationError, mergeStartupAudio } from "../lib/startupAudio";
 import { mediaAssets } from "@workspace/db";
 import { eq as equals } from "drizzle-orm";
+import { createObjectStorageService } from "../lib/cloudflare/objectStorageFactory";
 
 const router: IRouter = Router();
 
@@ -72,7 +74,7 @@ async function changeMediaVisibility(
   fallbackOwnerId: string,
   visibility: "public" | "private",
 ): Promise<void> {
-  const storage = new (await import("../lib/objectStorage")).ObjectStorageService();
+  const storage = createObjectStorageService();
   for (const objectPath of new Set(
     media
       .map((entry) => mediaUrlObjectPath(entry.url))
@@ -520,9 +522,22 @@ router.put(
       res.status(400).json({ error: "The SHA-256 checksum must be 64 hexadecimal characters" });
       return;
     }
+    // The startup-audio block is optional on write for the same reason: a
+    // partial client must not erase the track the owner published.
+    const audio = mergeStartupAudio(parsed.data.audio ?? current.audio);
+    const audioProblem = audioValidationError(audio);
+    if (audioProblem) {
+      res.status(400).json({ error: audioProblem });
+      return;
+    }
+    if (audio.enabled && !audio.url) {
+      res.status(400).json({ error: "Startup audio cannot be enabled without a selected track" });
+      return;
+    }
     const value = await writeSiteRecord(SITE_SETTINGS_KEY, {
       ...parsed.data,
       android,
+      audio,
       theme: mergeSiteTheme(parsed.data.theme),
     });
     await writeAudit(req.appIdentity!.userId, req.appIdentity!.email, "settings.update", SITE_SETTINGS_KEY);

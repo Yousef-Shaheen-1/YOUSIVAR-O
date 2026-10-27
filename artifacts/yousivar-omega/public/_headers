@@ -1,20 +1,18 @@
-# Cloudflare Pages static asset and APK handling
-# This is the minimum set needed to preserve the Android download behavior.
+# Response headers for Cloudflare Pages (dist/public/_headers).
+#
+# Cloudflare derives a static asset's Content-Type from its file extension, and
+# `.apk` is not a known extension, so this rule pins the Android package type
+# explicitly. `functions/downloads/[file].ts` sets it on the response as well,
+# which is the guaranteed path — see CLOUDFLARE.md before removing either one.
 
 /*
-  Cloudflare Pages automatically serves static files from the project. The APK
-  download is a static asset under /downloads/*.apk, so it must be served with the
-  correct Content-Type header or some browsers/referrers will reject it.
-*/
-
-/*.apk
-  Content-Type: application/vnd.android.package-archive
-  Cache-Control: public, max-age=3600
-
-/*
-  Default security headers remain the app’s own origin and avoid cross-site API
-  access from other origins. More specific responses can be tuned in the Cloudflare
-  dashboard if needed.
-  Content-Security-Policy: default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; connect-src 'self' https://*.clerk.accounts.dev https://*.cloudflare.com;
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin
+
+# Vite emits content-hashed asset filenames, so they can be cached forever.
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/downloads/*
+  Content-Type: application/vnd.android.package-archive
+  Cache-Control: public, max-age=86400

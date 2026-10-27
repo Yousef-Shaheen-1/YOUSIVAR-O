@@ -5,7 +5,13 @@
  * YOUSIVAR–Ω public content, owner administration, and integration API.
  * OpenAPI spec version: 0.1.0
  */
+import type { HealthStatusRuntime } from './healthStatusRuntime';
 
+/**
+ * Liveness and deployment facts. `runtime` and `storageDriver` come from the environment the process booted with, so a deployment can be checked without reading any secret.
+ */
 export interface HealthStatus {
   status: string;
+  runtime?: HealthStatusRuntime;
+  storageDriver?: string;
 }

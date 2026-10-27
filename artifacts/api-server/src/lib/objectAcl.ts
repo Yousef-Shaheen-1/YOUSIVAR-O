@@ -94,16 +94,20 @@ export async function getObjectAclPolicy(
   return JSON.parse(aclPolicy as string);
 }
 
-export async function canAccessObject({
+/**
+ * Applies an access policy the caller already read. Shared with the Cloudflare
+ * R2 driver, which keeps the policy in object custom metadata instead of a GCS
+ * `File`, so both drivers evaluate visibility identically.
+ */
+export async function isPolicyAllowed({
   userId,
-  objectFile,
+  aclPolicy,
   requestedPermission,
 }: {
   userId?: string;
-  objectFile: File;
+  aclPolicy: ObjectAclPolicy | null;
   requestedPermission: ObjectPermission;
 }): Promise<boolean> {
-  const aclPolicy = await getObjectAclPolicy(objectFile);
   if (!aclPolicy) {
     return false;
   }
@@ -134,4 +138,20 @@ export async function canAccessObject({
   }
 
   return false;
+}
+
+export async function canAccessObject({
+  userId,
+  objectFile,
+  requestedPermission,
+}: {
+  userId?: string;
+  objectFile: File;
+  requestedPermission: ObjectPermission;
+}): Promise<boolean> {
+  return isPolicyAllowed({
+    userId,
+    aclPolicy: await getObjectAclPolicy(objectFile),
+    requestedPermission,
+  });
 }

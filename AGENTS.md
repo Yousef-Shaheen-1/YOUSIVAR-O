@@ -176,3 +176,37 @@ curl -s  http://localhost:3000/downloads/yousivar-omega-android.apk -o /tmp/a.ap
 - Types: `pnpm run typecheck` (workspace-wide, passes).
 - The repo ships no test suite. `scripts/smoke-api.mjs` only checks public
   endpoints and anonymous rejection; it does not sign in.
+  Run it inside the network with the real base:
+  `docker compose -f docker-compose.base44.yml run --rm --no-deps --entrypoint sh
+  -e API_BASE_URL=http://api:8000 deps -ec 'corepack enable; node scripts/smoke-api.mjs'`
+
+## Cloudflare deployment (added by the Cloudflare migration)
+
+Full instructions, bindings and rollback live in `CLOUDFLARE.md`. What matters
+while working in this repo:
+
+- **Nothing about the sandbox stack changed.** Docker compose still runs the app
+  from source; there is no Cloudflare dependency in development.
+- The API is Cloudflare-ready through `artifacts/api-server/src/worker.ts`, which
+  serves the *existing* Express app over `cloudflare:node`'s `node:http` support.
+  `src/app.ts` and every route are untouched by that mechanism.
+- `CLOUDFLARE_WORKER=1` is the runtime marker that switches the worker-only paths
+  (stdout logging in `lib/logger.ts`, the mail transport in `lib/email.ts`, the
+  storage driver, and skipping the in-process Clerk proxy). It is set only by
+  `artifacts/api-server/wrangler.jsonc`; unset means ordinary Node behaviour.
+- Object storage is chosen by `OBJECT_STORAGE_DRIVER`:
+  `createObjectStorageService()` in `lib/cloudflare/objectStorageFactory.ts` returns
+  the R2 driver for `r2` and the Replit/GCS driver otherwise. **Never construct
+  `new ObjectStorageService()` in a route** — that bypasses the choice.
+- `@google-cloud/storage` is aliased to `lib/cloudflare/gcsSdkStub.ts` for the
+  Worker build only (see `alias` in `wrangler.jsonc`), so the Node-only SDK never
+  enters the bundle. If you add a Node-only import to a path the API uses, check
+  `pnpm --filter @workspace/api-server run cf:dry-run` still bundles.
+- `wrangler` is a devDependency of `artifacts/api-server` (pinned; the workspace's
+  `minimumReleaseAge` blocks the newest releases, so pick a version ≥1 day old).
+  After changing any manifest, re-run the `deps` service once with
+  `--no-frozen-lockfile` to refresh the lockfile, otherwise the default
+  `--frozen-lockfile` install fails.
+- `workerd`'s build script is not approved in `pnpm-workspace.yaml`
+  (`onlyBuiltDependencies`), so `cf:dev` cannot run locally until you approve it.
+  `cf:dry-run` (bundle + bindings check, no account needed) is the practical check.

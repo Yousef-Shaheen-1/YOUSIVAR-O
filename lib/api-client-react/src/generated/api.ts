@@ -37,6 +37,7 @@ import type {
   AssistantSettings,
   AssistantSettingsUpdate,
   BadRequestResponse,
+  CompleteGithubConnectParams,
   ContentItem,
   ContentItemInput,
   ContentItemUpdate,
@@ -44,7 +45,16 @@ import type {
   DeveloperProfileInput,
   ErrorEnvelope,
   ForbiddenResponse,
+  GithubBranchList,
+  GithubConnectStart,
   GithubImportInput,
+  GithubImportPreview,
+  GithubImportRequest,
+  GithubIntegration,
+  GithubPublishRequest,
+  GithubPublishResult,
+  GithubRepositorySummary,
+  GithubTokenConnect,
   HealthStatus,
   ListAdminActivityParams,
   ListAdminContentParams,
@@ -56,6 +66,10 @@ import type {
   PublishContentInput,
   SiteSettings,
   SiteSettingsUpdate,
+  TermuxConfirmation,
+  TermuxConfirmationResult,
+  TermuxConsole,
+  TermuxConsoleUpdate,
   UnauthorizedResponse,
   UploadUrlRequest,
   UploadUrlResponse
@@ -2455,5 +2469,1122 @@ export const useCompleteMediaUpload = <TError = ErrorType<BadRequestResponse | U
         TContext
       > => {
       return useMutation(getCompleteMediaUploadMutationOptions(options), queryClient);
+    }
+
+export const getGetTermuxConsoleUrl = () => {
+
+
+
+
+  return `/api/admin/termux`
+}
+
+/**
+ * Returns the owner's Termux catalog (projects, commands, scripts and guides) together with an explicit statement of what this deployment can and cannot execute. The web API never runs shell commands.
+ * @summary Owner-only Termux management console
+ */
+export const getTermuxConsole = async ( options?: Parameters<typeof customFetch>[1]): Promise<TermuxConsole> => {
+
+  return customFetch<TermuxConsole>(getGetTermuxConsoleUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetTermuxConsoleQueryKey = () => {
+    return [
+    `/api/admin/termux`
+    ] as const;
+    }
+
+
+export const getGetTermuxConsoleQueryOptions = <TData = Awaited<ReturnType<typeof getTermuxConsole>>, TError = ErrorType<UnauthorizedResponse | ForbiddenResponse>>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTermuxConsole>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetTermuxConsoleQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getTermuxConsole>>> = ({ signal }) => getTermuxConsole({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getTermuxConsole>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetTermuxConsoleQueryResult = NonNullable<Awaited<ReturnType<typeof getTermuxConsole>>>
+export type GetTermuxConsoleQueryError = ErrorType<UnauthorizedResponse | ForbiddenResponse>
+
+
+export function useGetTermuxConsole<TData = Awaited<ReturnType<typeof getTermuxConsole>>, TError = ErrorType<UnauthorizedResponse | ForbiddenResponse>>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTermuxConsole>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getTermuxConsole>>,
+          TError,
+          Awaited<ReturnType<typeof getTermuxConsole>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetTermuxConsole<TData = Awaited<ReturnType<typeof getTermuxConsole>>, TError = ErrorType<UnauthorizedResponse | ForbiddenResponse>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTermuxConsole>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getTermuxConsole>>,
+          TError,
+          Awaited<ReturnType<typeof getTermuxConsole>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetTermuxConsole<TData = Awaited<ReturnType<typeof getTermuxConsole>>, TError = ErrorType<UnauthorizedResponse | ForbiddenResponse>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTermuxConsole>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Owner-only Termux management console
+ */
+
+export function useGetTermuxConsole<TData = Awaited<ReturnType<typeof getTermuxConsole>>, TError = ErrorType<UnauthorizedResponse | ForbiddenResponse>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTermuxConsole>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetTermuxConsoleQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getUpdateTermuxConsoleUrl = () => {
+
+
+
+
+  return `/api/admin/termux`
+}
+
+/**
+ * Stores the catalog entries. Nothing here is executed by the API.
+ * @summary Replace the owner's Termux catalog
+ */
+export const updateTermuxConsole = async (termuxConsoleUpdate: TermuxConsoleUpdate, options?: Parameters<typeof customFetch>[1]): Promise<TermuxConsole> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<TermuxConsole>(getUpdateTermuxConsoleUrl(),
+  {
+    ...options,
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(termuxConsoleUpdate)
+  }
+);}
+
+
+
+
+
+export const getUpdateTermuxConsoleMutationKey = () => ['updateTermuxConsole'] as const;
+
+export const getUpdateTermuxConsoleMutationOptions = <TError = ErrorType<BadRequestResponse | UnauthorizedResponse | ForbiddenResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateTermuxConsole>>, TError,UpdateTermuxConsoleMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateTermuxConsole>>, TError,UpdateTermuxConsoleMutationVariables, TContext> => {
+
+const mutationKey = getUpdateTermuxConsoleMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateTermuxConsole>>, UpdateTermuxConsoleMutationVariables> = (props) => {
+          const {data} = props ?? {};
+
+          return  updateTermuxConsole(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateTermuxConsoleMutationResult = NonNullable<Awaited<ReturnType<typeof updateTermuxConsole>>>
+    export type UpdateTermuxConsoleMutationBody = BodyType<TermuxConsoleUpdate>
+    export type UpdateTermuxConsoleMutationError = ErrorType<BadRequestResponse | UnauthorizedResponse | ForbiddenResponse>
+    export type UpdateTermuxConsoleMutationVariables = {data: BodyType<TermuxConsoleUpdate>}
+
+    /**
+ * @summary Replace the owner's Termux catalog
+ */
+export const useUpdateTermuxConsole = <TError = ErrorType<BadRequestResponse | UnauthorizedResponse | ForbiddenResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateTermuxConsole>>, TError,UpdateTermuxConsoleMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof updateTermuxConsole>>,
+        TError,
+        UpdateTermuxConsoleMutationVariables,
+        TContext
+      > => {
+      return useMutation(getUpdateTermuxConsoleMutationOptions(options), queryClient);
+    }
+
+export const getConfirmTermuxCommandUrl = () => {
+
+
+
+
+  return `/api/admin/termux/confirm`
+}
+
+/**
+ * Writes an audit entry for the confirmed review of one catalog entry and answers with the exact command to run locally. It never executes it: no web endpoint of this application has shell access.
+ * @summary Record an explicit owner confirmation for a Termux entry
+ */
+export const confirmTermuxCommand = async (termuxConfirmation: TermuxConfirmation, options?: Parameters<typeof customFetch>[1]): Promise<TermuxConfirmationResult> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<TermuxConfirmationResult>(getConfirmTermuxCommandUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(termuxConfirmation)
+  }
+);}
+
+
+
+
+
+export const getConfirmTermuxCommandMutationKey = () => ['confirmTermuxCommand'] as const;
+
+export const getConfirmTermuxCommandMutationOptions = <TError = ErrorType<BadRequestResponse | UnauthorizedResponse | ForbiddenResponse | NotFoundResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof confirmTermuxCommand>>, TError,ConfirmTermuxCommandMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof confirmTermuxCommand>>, TError,ConfirmTermuxCommandMutationVariables, TContext> => {
+
+const mutationKey = getConfirmTermuxCommandMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof confirmTermuxCommand>>, ConfirmTermuxCommandMutationVariables> = (props) => {
+          const {data} = props ?? {};
+
+          return  confirmTermuxCommand(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type ConfirmTermuxCommandMutationResult = NonNullable<Awaited<ReturnType<typeof confirmTermuxCommand>>>
+    export type ConfirmTermuxCommandMutationBody = BodyType<TermuxConfirmation>
+    export type ConfirmTermuxCommandMutationError = ErrorType<BadRequestResponse | UnauthorizedResponse | ForbiddenResponse | NotFoundResponse>
+    export type ConfirmTermuxCommandMutationVariables = {data: BodyType<TermuxConfirmation>}
+
+    /**
+ * @summary Record an explicit owner confirmation for a Termux entry
+ */
+export const useConfirmTermuxCommand = <TError = ErrorType<BadRequestResponse | UnauthorizedResponse | ForbiddenResponse | NotFoundResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof confirmTermuxCommand>>, TError,ConfirmTermuxCommandMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof confirmTermuxCommand>>,
+        TError,
+        ConfirmTermuxCommandMutationVariables,
+        TContext
+      > => {
+      return useMutation(getConfirmTermuxCommandMutationOptions(options), queryClient);
+    }
+
+export const getGetGithubIntegrationUrl = () => {
+
+
+
+
+  return `/api/admin/github/status`
+}
+
+/**
+ * @summary Owner-only GitHub integration status
+ */
+export const getGithubIntegration = async ( options?: Parameters<typeof customFetch>[1]): Promise<GithubIntegration> => {
+
+  return customFetch<GithubIntegration>(getGetGithubIntegrationUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetGithubIntegrationQueryKey = () => {
+    return [
+    `/api/admin/github/status`
+    ] as const;
+    }
+
+
+export const getGetGithubIntegrationQueryOptions = <TData = Awaited<ReturnType<typeof getGithubIntegration>>, TError = ErrorType<UnauthorizedResponse | ForbiddenResponse>>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getGithubIntegration>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetGithubIntegrationQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getGithubIntegration>>> = ({ signal }) => getGithubIntegration({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getGithubIntegration>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetGithubIntegrationQueryResult = NonNullable<Awaited<ReturnType<typeof getGithubIntegration>>>
+export type GetGithubIntegrationQueryError = ErrorType<UnauthorizedResponse | ForbiddenResponse>
+
+
+export function useGetGithubIntegration<TData = Awaited<ReturnType<typeof getGithubIntegration>>, TError = ErrorType<UnauthorizedResponse | ForbiddenResponse>>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getGithubIntegration>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getGithubIntegration>>,
+          TError,
+          Awaited<ReturnType<typeof getGithubIntegration>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetGithubIntegration<TData = Awaited<ReturnType<typeof getGithubIntegration>>, TError = ErrorType<UnauthorizedResponse | ForbiddenResponse>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getGithubIntegration>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getGithubIntegration>>,
+          TError,
+          Awaited<ReturnType<typeof getGithubIntegration>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetGithubIntegration<TData = Awaited<ReturnType<typeof getGithubIntegration>>, TError = ErrorType<UnauthorizedResponse | ForbiddenResponse>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getGithubIntegration>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Owner-only GitHub integration status
+ */
+
+export function useGetGithubIntegration<TData = Awaited<ReturnType<typeof getGithubIntegration>>, TError = ErrorType<UnauthorizedResponse | ForbiddenResponse>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getGithubIntegration>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetGithubIntegrationQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getStartGithubConnectUrl = () => {
+
+
+
+
+  return `/api/admin/github/connect/start`
+}
+
+/**
+ * Returns the GitHub authorize URL to open. Requires a registered GitHub OAuth app; when it is not configured the response says so instead of returning a broken link.
+ * @summary Begin the GitHub OAuth connection
+ */
+export const startGithubConnect = async ( options?: Parameters<typeof customFetch>[1]): Promise<GithubConnectStart> => {
+
+  return customFetch<GithubConnectStart>(getStartGithubConnectUrl(),
+  {
+    ...options,
+    method: 'POST'
+
+
+  }
+);}
+
+
+
+
+
+export const getStartGithubConnectMutationKey = () => ['startGithubConnect'] as const;
+
+export const getStartGithubConnectMutationOptions = <TError = ErrorType<BadRequestResponse | UnauthorizedResponse | ForbiddenResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof startGithubConnect>>, TError,void, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof startGithubConnect>>, TError,void, TContext> => {
+
+const mutationKey = getStartGithubConnectMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof startGithubConnect>>, void> = () => {
+
+
+          return  startGithubConnect(requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type StartGithubConnectMutationResult = NonNullable<Awaited<ReturnType<typeof startGithubConnect>>>
+
+    export type StartGithubConnectMutationError = ErrorType<BadRequestResponse | UnauthorizedResponse | ForbiddenResponse>
+
+
+    /**
+ * @summary Begin the GitHub OAuth connection
+ */
+export const useStartGithubConnect = <TError = ErrorType<BadRequestResponse | UnauthorizedResponse | ForbiddenResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof startGithubConnect>>, TError,void, TContext>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof startGithubConnect>>,
+        TError,
+        void,
+        TContext
+      > => {
+      return useMutation(getStartGithubConnectMutationOptions(options), queryClient);
+    }
+
+export const getConnectGithubTokenUrl = () => {
+
+
+
+
+  return `/api/admin/github/connect/token`
+}
+
+/**
+ * Stores the supplied token encrypted, server-side only. The value is never returned to the browser, never logged and can be revoked with DELETE /admin/github/connection.
+ * @summary Connect GitHub with a scoped access token
+ */
+export const connectGithubToken = async (githubTokenConnect: GithubTokenConnect, options?: Parameters<typeof customFetch>[1]): Promise<GithubIntegration> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<GithubIntegration>(getConnectGithubTokenUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(githubTokenConnect)
+  }
+);}
+
+
+
+
+
+export const getConnectGithubTokenMutationKey = () => ['connectGithubToken'] as const;
+
+export const getConnectGithubTokenMutationOptions = <TError = ErrorType<BadRequestResponse | UnauthorizedResponse | ForbiddenResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof connectGithubToken>>, TError,ConnectGithubTokenMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof connectGithubToken>>, TError,ConnectGithubTokenMutationVariables, TContext> => {
+
+const mutationKey = getConnectGithubTokenMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof connectGithubToken>>, ConnectGithubTokenMutationVariables> = (props) => {
+          const {data} = props ?? {};
+
+          return  connectGithubToken(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type ConnectGithubTokenMutationResult = NonNullable<Awaited<ReturnType<typeof connectGithubToken>>>
+    export type ConnectGithubTokenMutationBody = BodyType<GithubTokenConnect>
+    export type ConnectGithubTokenMutationError = ErrorType<BadRequestResponse | UnauthorizedResponse | ForbiddenResponse>
+    export type ConnectGithubTokenMutationVariables = {data: BodyType<GithubTokenConnect>}
+
+    /**
+ * @summary Connect GitHub with a scoped access token
+ */
+export const useConnectGithubToken = <TError = ErrorType<BadRequestResponse | UnauthorizedResponse | ForbiddenResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof connectGithubToken>>, TError,ConnectGithubTokenMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof connectGithubToken>>,
+        TError,
+        ConnectGithubTokenMutationVariables,
+        TContext
+      > => {
+      return useMutation(getConnectGithubTokenMutationOptions(options), queryClient);
+    }
+
+export const getCompleteGithubConnectUrl = (params?: CompleteGithubConnectParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/admin/github/callback?${stringifiedParams}` : `/api/admin/github/callback`
+}
+
+/**
+ * Exchanges the authorization code for a token (kept server-side) and redirects the browser back to the owner console. Every failure is reported as a redirect with a status query parameter, never as a partial connection.
+ * @summary GitHub OAuth callback
+ */
+export const completeGithubConnect = async (params?: CompleteGithubConnectParams, options?: Parameters<typeof customFetch>[1]): Promise<unknown> => {
+
+  return customFetch<unknown>(getCompleteGithubConnectUrl(params),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getCompleteGithubConnectQueryKey = (params?: CompleteGithubConnectParams,) => {
+    return [
+    `/api/admin/github/callback`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getCompleteGithubConnectQueryOptions = <TData = Awaited<ReturnType<typeof completeGithubConnect>>, TError = ErrorType<void>>(params?: CompleteGithubConnectParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof completeGithubConnect>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getCompleteGithubConnectQueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof completeGithubConnect>>> = ({ signal }) => completeGithubConnect(params, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof completeGithubConnect>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type CompleteGithubConnectQueryResult = NonNullable<Awaited<ReturnType<typeof completeGithubConnect>>>
+export type CompleteGithubConnectQueryError = ErrorType<void>
+
+
+export function useCompleteGithubConnect<TData = Awaited<ReturnType<typeof completeGithubConnect>>, TError = ErrorType<void>>(
+ params: undefined |  CompleteGithubConnectParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof completeGithubConnect>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof completeGithubConnect>>,
+          TError,
+          Awaited<ReturnType<typeof completeGithubConnect>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useCompleteGithubConnect<TData = Awaited<ReturnType<typeof completeGithubConnect>>, TError = ErrorType<void>>(
+ params?: CompleteGithubConnectParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof completeGithubConnect>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof completeGithubConnect>>,
+          TError,
+          Awaited<ReturnType<typeof completeGithubConnect>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useCompleteGithubConnect<TData = Awaited<ReturnType<typeof completeGithubConnect>>, TError = ErrorType<void>>(
+ params?: CompleteGithubConnectParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof completeGithubConnect>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary GitHub OAuth callback
+ */
+
+export function useCompleteGithubConnect<TData = Awaited<ReturnType<typeof completeGithubConnect>>, TError = ErrorType<void>>(
+ params?: CompleteGithubConnectParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof completeGithubConnect>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getCompleteGithubConnectQueryOptions(params,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getListGithubRepositoriesUrl = () => {
+
+
+
+
+  return `/api/admin/github/repositories`
+}
+
+/**
+ * @summary List repositories the connected account can read
+ */
+export const listGithubRepositories = async ( options?: Parameters<typeof customFetch>[1]): Promise<GithubRepositorySummary[]> => {
+
+  return customFetch<GithubRepositorySummary[]>(getListGithubRepositoriesUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListGithubRepositoriesQueryKey = () => {
+    return [
+    `/api/admin/github/repositories`
+    ] as const;
+    }
+
+
+export const getListGithubRepositoriesQueryOptions = <TData = Awaited<ReturnType<typeof listGithubRepositories>>, TError = ErrorType<BadRequestResponse | UnauthorizedResponse | ForbiddenResponse | ErrorEnvelope>>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listGithubRepositories>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListGithubRepositoriesQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listGithubRepositories>>> = ({ signal }) => listGithubRepositories({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listGithubRepositories>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type ListGithubRepositoriesQueryResult = NonNullable<Awaited<ReturnType<typeof listGithubRepositories>>>
+export type ListGithubRepositoriesQueryError = ErrorType<BadRequestResponse | UnauthorizedResponse | ForbiddenResponse | ErrorEnvelope>
+
+
+export function useListGithubRepositories<TData = Awaited<ReturnType<typeof listGithubRepositories>>, TError = ErrorType<BadRequestResponse | UnauthorizedResponse | ForbiddenResponse | ErrorEnvelope>>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listGithubRepositories>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listGithubRepositories>>,
+          TError,
+          Awaited<ReturnType<typeof listGithubRepositories>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useListGithubRepositories<TData = Awaited<ReturnType<typeof listGithubRepositories>>, TError = ErrorType<BadRequestResponse | UnauthorizedResponse | ForbiddenResponse | ErrorEnvelope>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listGithubRepositories>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listGithubRepositories>>,
+          TError,
+          Awaited<ReturnType<typeof listGithubRepositories>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useListGithubRepositories<TData = Awaited<ReturnType<typeof listGithubRepositories>>, TError = ErrorType<BadRequestResponse | UnauthorizedResponse | ForbiddenResponse | ErrorEnvelope>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listGithubRepositories>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary List repositories the connected account can read
+ */
+
+export function useListGithubRepositories<TData = Awaited<ReturnType<typeof listGithubRepositories>>, TError = ErrorType<BadRequestResponse | UnauthorizedResponse | ForbiddenResponse | ErrorEnvelope>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listGithubRepositories>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getListGithubRepositoriesQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getListGithubBranchesUrl = (owner: string,
+    name: string,) => {
+
+
+
+
+  return `/api/admin/github/repositories/${owner}/${name}/branches`
+}
+
+/**
+ * @summary List the branches of one repository
+ */
+export const listGithubBranches = async (owner: string,
+    name: string, options?: Parameters<typeof customFetch>[1]): Promise<GithubBranchList> => {
+
+  return customFetch<GithubBranchList>(getListGithubBranchesUrl(owner,name),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListGithubBranchesQueryKey = (owner: string,
+    name: string,) => {
+    return [
+    `/api/admin/github/repositories/${owner}/${name}/branches`
+    ] as const;
+    }
+
+
+export const getListGithubBranchesQueryOptions = <TData = Awaited<ReturnType<typeof listGithubBranches>>, TError = ErrorType<BadRequestResponse | UnauthorizedResponse | ForbiddenResponse | ErrorEnvelope>>(owner: string,
+    name: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listGithubBranches>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListGithubBranchesQueryKey(owner,name);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listGithubBranches>>> = ({ signal }) => listGithubBranches(owner,name, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: owner !== null && owner !== undefined && name !== null && name !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listGithubBranches>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type ListGithubBranchesQueryResult = NonNullable<Awaited<ReturnType<typeof listGithubBranches>>>
+export type ListGithubBranchesQueryError = ErrorType<BadRequestResponse | UnauthorizedResponse | ForbiddenResponse | ErrorEnvelope>
+
+
+export function useListGithubBranches<TData = Awaited<ReturnType<typeof listGithubBranches>>, TError = ErrorType<BadRequestResponse | UnauthorizedResponse | ForbiddenResponse | ErrorEnvelope>>(
+ owner: string,
+    name: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listGithubBranches>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listGithubBranches>>,
+          TError,
+          Awaited<ReturnType<typeof listGithubBranches>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useListGithubBranches<TData = Awaited<ReturnType<typeof listGithubBranches>>, TError = ErrorType<BadRequestResponse | UnauthorizedResponse | ForbiddenResponse | ErrorEnvelope>>(
+ owner: string,
+    name: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listGithubBranches>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listGithubBranches>>,
+          TError,
+          Awaited<ReturnType<typeof listGithubBranches>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useListGithubBranches<TData = Awaited<ReturnType<typeof listGithubBranches>>, TError = ErrorType<BadRequestResponse | UnauthorizedResponse | ForbiddenResponse | ErrorEnvelope>>(
+ owner: string,
+    name: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listGithubBranches>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary List the branches of one repository
+ */
+
+export function useListGithubBranches<TData = Awaited<ReturnType<typeof listGithubBranches>>, TError = ErrorType<BadRequestResponse | UnauthorizedResponse | ForbiddenResponse | ErrorEnvelope>>(
+ owner: string,
+    name: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listGithubBranches>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getListGithubBranchesQueryOptions(owner,name,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getPreviewGithubImportUrl = () => {
+
+
+
+
+  return `/api/admin/github/preview`
+}
+
+/**
+ * Reads repository metadata, the README and the top-level file list of the selected branch. Sensitive paths are never read and are reported as skipped; nothing is written to the catalog by this call.
+ * @summary Preview what an import would publish
+ */
+export const previewGithubImport = async (githubImportRequest: GithubImportRequest, options?: Parameters<typeof customFetch>[1]): Promise<GithubImportPreview> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<GithubImportPreview>(getPreviewGithubImportUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(githubImportRequest)
+  }
+);}
+
+
+
+
+
+export const getPreviewGithubImportMutationKey = () => ['previewGithubImport'] as const;
+
+export const getPreviewGithubImportMutationOptions = <TError = ErrorType<BadRequestResponse | UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ErrorEnvelope>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof previewGithubImport>>, TError,PreviewGithubImportMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof previewGithubImport>>, TError,PreviewGithubImportMutationVariables, TContext> => {
+
+const mutationKey = getPreviewGithubImportMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof previewGithubImport>>, PreviewGithubImportMutationVariables> = (props) => {
+          const {data} = props ?? {};
+
+          return  previewGithubImport(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type PreviewGithubImportMutationResult = NonNullable<Awaited<ReturnType<typeof previewGithubImport>>>
+    export type PreviewGithubImportMutationBody = BodyType<GithubImportRequest>
+    export type PreviewGithubImportMutationError = ErrorType<BadRequestResponse | UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ErrorEnvelope>
+    export type PreviewGithubImportMutationVariables = {data: BodyType<GithubImportRequest>}
+
+    /**
+ * @summary Preview what an import would publish
+ */
+export const usePreviewGithubImport = <TError = ErrorType<BadRequestResponse | UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ErrorEnvelope>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof previewGithubImport>>, TError,PreviewGithubImportMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof previewGithubImport>>,
+        TError,
+        PreviewGithubImportMutationVariables,
+        TContext
+      > => {
+      return useMutation(getPreviewGithubImportMutationOptions(options), queryClient);
+    }
+
+export const getPublishGithubImportUrl = () => {
+
+
+
+
+  return `/api/admin/github/publish`
+}
+
+/**
+ * Creates or updates the catalog entry for a repository. It saves a draft unless the owner explicitly asks for publication, and it records the import status.
+ * @summary Publish or update a reviewed repository in the catalog
+ */
+export const publishGithubImport = async (githubPublishRequest: GithubPublishRequest, options?: Parameters<typeof customFetch>[1]): Promise<GithubPublishResult> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<GithubPublishResult>(getPublishGithubImportUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(githubPublishRequest)
+  }
+);}
+
+
+
+
+
+export const getPublishGithubImportMutationKey = () => ['publishGithubImport'] as const;
+
+export const getPublishGithubImportMutationOptions = <TError = ErrorType<BadRequestResponse | UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ErrorEnvelope>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof publishGithubImport>>, TError,PublishGithubImportMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof publishGithubImport>>, TError,PublishGithubImportMutationVariables, TContext> => {
+
+const mutationKey = getPublishGithubImportMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof publishGithubImport>>, PublishGithubImportMutationVariables> = (props) => {
+          const {data} = props ?? {};
+
+          return  publishGithubImport(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type PublishGithubImportMutationResult = NonNullable<Awaited<ReturnType<typeof publishGithubImport>>>
+    export type PublishGithubImportMutationBody = BodyType<GithubPublishRequest>
+    export type PublishGithubImportMutationError = ErrorType<BadRequestResponse | UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ErrorEnvelope>
+    export type PublishGithubImportMutationVariables = {data: BodyType<GithubPublishRequest>}
+
+    /**
+ * @summary Publish or update a reviewed repository in the catalog
+ */
+export const usePublishGithubImport = <TError = ErrorType<BadRequestResponse | UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ErrorEnvelope>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof publishGithubImport>>, TError,PublishGithubImportMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof publishGithubImport>>,
+        TError,
+        PublishGithubImportMutationVariables,
+        TContext
+      > => {
+      return useMutation(getPublishGithubImportMutationOptions(options), queryClient);
+    }
+
+export const getDisconnectGithubUrl = () => {
+
+
+
+
+  return `/api/admin/github/connection`
+}
+
+/**
+ * Deletes the stored token. When the token was granted through OAuth the API also asks GitHub to revoke the grant; the outcome is reported.
+ * @summary Disconnect GitHub and delete the stored access token
+ */
+export const disconnectGithub = async ( options?: Parameters<typeof customFetch>[1]): Promise<GithubIntegration> => {
+
+  return customFetch<GithubIntegration>(getDisconnectGithubUrl(),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+
+export const getDisconnectGithubMutationKey = () => ['disconnectGithub'] as const;
+
+export const getDisconnectGithubMutationOptions = <TError = ErrorType<UnauthorizedResponse | ForbiddenResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof disconnectGithub>>, TError,void, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof disconnectGithub>>, TError,void, TContext> => {
+
+const mutationKey = getDisconnectGithubMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof disconnectGithub>>, void> = () => {
+
+
+          return  disconnectGithub(requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DisconnectGithubMutationResult = NonNullable<Awaited<ReturnType<typeof disconnectGithub>>>
+
+    export type DisconnectGithubMutationError = ErrorType<UnauthorizedResponse | ForbiddenResponse>
+
+
+    /**
+ * @summary Disconnect GitHub and delete the stored access token
+ */
+export const useDisconnectGithub = <TError = ErrorType<UnauthorizedResponse | ForbiddenResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof disconnectGithub>>, TError,void, TContext>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof disconnectGithub>>,
+        TError,
+        void,
+        TContext
+      > => {
+      return useMutation(getDisconnectGithubMutationOptions(options), queryClient);
     }
 
