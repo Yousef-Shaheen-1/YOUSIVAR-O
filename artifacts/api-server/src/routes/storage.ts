@@ -7,14 +7,12 @@ import { Router, type IRouter, type Request, type Response } from 'express';
 import { getAuth } from '@clerk/express';
 
 import { ObjectPermission } from '../lib/objectAcl';
-import {
-  ObjectNotFoundError,
-  ObjectStorageService,
-} from '../lib/objectStorage';
+import { ObjectNotFoundError } from '../lib/objectStorage';
+import { createObjectStorageService } from '../lib/cloudflare/objectStorageFactory';
 import { requirePermission } from '../middlewares/auth';
 
 const router: IRouter = Router();
-const objectStorageService = new ObjectStorageService();
+const objectStorageService = createObjectStorageService();
 
 /**
  * POST /storage/uploads/request-url
@@ -51,6 +49,72 @@ router.post(
     } catch (error) {
       req.log.error({ err: error }, 'Error generating upload URL');
       res.status(500).json({ error: 'Failed to generate upload URL' });
+    }
+  },
+);
+
+/**
+ * Reads an upload body as bytes.
+ *
+ * `express.json()` runs before the routes and consumes the stream for JSON
+ * payloads, so a parsed body is re-serialized; media uploads carry their own
+ * content type (image/png, video/mp4, ...), which that parser ignores, and are
+ * streamed as they arrive.
+ */
+async function readUploadBody(req: Request): Promise<Uint8Array> {
+  const parsed = (req as Request & { body?: unknown }).body;
+  if (parsed !== undefined && !Buffer.isBuffer(parsed)) {
+    return Buffer.from(JSON.stringify(parsed), 'utf8');
+  }
+  const chunks: Buffer[] = [];
+  for await (const chunk of req) {
+    chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk as Uint8Array));
+  }
+  return Buffer.concat(chunks);
+}
+
+/**
+ * PUT /storage/objects/*
+ *
+ * Receives the bytes for the URL handed out by /storage/uploads/request-url when
+ * the configured backend cannot issue a presigned URL — Cloudflare R2 does not
+ * (see lib/cloudflare/r2ObjectStorage.ts). The browser PUTs the file back to this
+ * same origin, so the session cookie, the same-origin write guard and this
+ * permission check all still apply.
+ *
+ * Backends that presign uploads (the Replit/GCS driver) do not implement
+ * receiveUpload and answer 501 here, which is what keeps development unchanged.
+ */
+router.put(
+  '/storage/objects/*path',
+  requirePermission('media:write'),
+  async (req: Request, res: Response) => {
+    const storage = createObjectStorageService();
+    if (!storage.receiveUpload) {
+      res.status(501).json({
+        error:
+          'Direct uploads are not supported by the configured object storage backend',
+      });
+      return;
+    }
+
+    const raw = req.params.path;
+    const objectId = Array.isArray(raw) ? raw.join('/') : raw;
+    try {
+      const body = await readUploadBody(req);
+      const objectPath = await storage.receiveUpload(
+        objectId,
+        body,
+        req.get('content-type') ?? 'application/octet-stream',
+      );
+      res.status(200).json({ objectPath });
+    } catch (error) {
+      if (error instanceof ObjectNotFoundError) {
+        res.status(404).json({ error: 'Object not found' });
+        return;
+      }
+      req.log.error({ err: error }, 'Error storing uploaded object');
+      res.status(500).json({ error: 'Failed to store uploaded object' });
     }
   },
 );

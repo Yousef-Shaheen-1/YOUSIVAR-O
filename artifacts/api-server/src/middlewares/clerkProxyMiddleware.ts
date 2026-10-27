@@ -58,6 +58,15 @@ export function clerkProxyMiddleware(): RequestHandler {
     return (_req, _res, next) => next();
   }
 
+  // On Cloudflare the proxy is an edge concern, not an in-process one: the
+  // site's DNS points `clerk.<domain>` at frontend-api.clerk.dev (a CNAME, which
+  // Cloudflare supports directly) and the browser loads Clerk JS from that host
+  // via VITE_CLERK_PROXY_URL. Re-proxying here would need a raw outbound socket,
+  // which the Workers runtime does not expose. See CLOUDFLARE.md.
+  if (process.env.CLOUDFLARE_WORKER === '1') {
+    return (_req, _res, next) => next();
+  }
+
   const secretKey = process.env.CLERK_SECRET_KEY;
   if (!secretKey) {
     return (_req, _res, next) => next();

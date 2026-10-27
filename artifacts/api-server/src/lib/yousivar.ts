@@ -1,9 +1,7 @@
 import { eq } from "drizzle-orm";
 import { db, siteRecords, type MediaReference } from "@workspace/db";
-import {
-  ObjectStorageService,
-  type ObjectStorageService as StorageService,
-} from "./objectStorage";
+import { createObjectStorageService } from "./cloudflare/objectStorageFactory";
+import type { ObjectStorageBackend as StorageService } from "./cloudflare/objectStorageBackend";
 import { DEFAULT_THEME, mergeSiteTheme, type SiteTheme } from "./theme";
 
 /**
@@ -218,7 +216,7 @@ export async function setMediaVisibility(
   media: MediaReference[],
   ownerId: string,
   visibility: "public" | "private",
-  storage: StorageService = new ObjectStorageService(),
+  storage: StorageService = createObjectStorageService(),
 ): Promise<void> {
   const paths = new Set(
     media

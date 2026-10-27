@@ -1,0 +1,54 @@
+{
+  // Cloudflare Worker that serves the YOUSIVAR–Ω API.
+  //
+  // The Worker runs the *existing* Express application unchanged (all of
+  // `src/routes/*`, middleware, Clerk auth, owner sessions, Drizzle queries)
+  // through Cloudflare's Node.js HTTP server support. See CLOUDFLARE.md for the
+  // account setup this file assumes, and README.md for the local dev stack.
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "yousivar-omega-api",
+  "main": "src/worker.ts",
+  // nodejs_compat is what provides node:http, node:crypto, Buffer, process.env
+  // and the node-postgres driver the API is built on.
+  "compatibility_date": "2026-10-27",
+  "compatibility_flags": ["nodejs_compat"],
+  "observability": { "enabled": true },
+  "hyperdrive": [
+    {
+      "binding": "HYPERDRIVE",
+      // Replace with the id from `wrangler hyperdrive create yousivar-omega-db
+      // --connection-string="postgres://user:password@host:5432/db"`.
+      "id": "REPLACE_WITH_HYPERDRIVE_ID"
+    }
+  ],
+  "r2_buckets": [
+    {
+      "binding": "MEDIA_BUCKET",
+      // Replace with the bucket created by `wrangler r2 bucket create`.
+      "bucket_name": "yousivar-omega-media"
+    }
+  ],
+  "vars": {
+    // Runtime marker read by the API (never set by hand in production config):
+    // it switches the worker-only paths — stdout logging, the mail transport and
+    // the object-storage driver — and disables the in-process Clerk proxy,
+    // which moves to a DNS CNAME on Cloudflare. Unset means "ordinary Node".
+    "CLOUDFLARE_WORKER": "1",
+    "OBJECT_STORAGE_DRIVER": "r2",
+    "LOG_LEVEL": "info"
+  },
+  // The Replit Object Storage client (Google Cloud Storage SDK) is Node-only.
+  // It stays the dev/self-hosted driver; on Workers it resolves to an inert stub
+  // so the bundle builds and any accidental use fails with a clear message
+  // instead of a bundling error.
+  "alias": {
+    "@google-cloud/storage": "./src/lib/cloudflare/gcsSdkStub.ts"
+  },
+  // Secrets are NOT listed here (never commit values). Set them with
+  // `wrangler secret put <NAME>`; the full list is in CLOUDFLARE.md.
+  //
+  // Routing: attach the Worker to the site's hostname so the API stays on the
+  // same origin as the Pages site (the owner session cookie and the API's
+  // same-origin write guard both require it). Uncomment and set your domain:
+  // "routes": [{ "pattern": "example.com/api/*", "zone_name": "example.com" }]
+}

@@ -53,3 +53,8 @@ Thumbs.db
 # Replit
 .cache/
 .local/
+
+# Cloudflare / Wrangler
+.wrangler/
+.wrangler-build/
+.dev.vars

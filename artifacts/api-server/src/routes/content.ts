@@ -49,6 +49,7 @@ import {
 import { mergeSiteTheme } from "../lib/theme";
 import { mediaAssets } from "@workspace/db";
 import { eq as equals } from "drizzle-orm";
+import { createObjectStorageService } from "../lib/cloudflare/objectStorageFactory";
 
 const router: IRouter = Router();
 
@@ -72,7 +73,7 @@ async function changeMediaVisibility(
   fallbackOwnerId: string,
   visibility: "public" | "private",
 ): Promise<void> {
-  const storage = new (await import("../lib/objectStorage")).ObjectStorageService();
+  const storage = createObjectStorageService();
   for (const objectPath of new Set(
     media
       .map((entry) => mediaUrlObjectPath(entry.url))

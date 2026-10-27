@@ -9,6 +9,18 @@ import {
   ObjectPermission,
   setObjectAclPolicy,
 } from './objectAcl';
+import {
+  ObjectNotFoundError,
+  type ObjectStorageBackend,
+} from './cloudflare/objectStorageBackend';
+
+/**
+ * Canonical "object not found" error for every storage driver. It lives in
+ * `cloudflare/objectStorageBackend.ts` so the Cloudflare R2 driver throws the
+ * very same class and the route-level `instanceof` handling keeps working
+ * whichever driver is configured.
+ */
+export { ObjectNotFoundError };
 
 const REPLIT_SIDECAR_ENDPOINT = 'http://127.0.0.1:1106';
 
@@ -30,15 +42,13 @@ export const objectStorageClient = new Storage({
   projectId: '',
 });
 
-export class ObjectNotFoundError extends Error {
-  constructor() {
-    super('Object not found');
-    this.name = 'ObjectNotFoundError';
-    Object.setPrototypeOf(this, ObjectNotFoundError.prototype);
-  }
-}
-
-export class ObjectStorageService {
+/**
+ * Replit Object Storage driver (Google Cloud Storage SDK + local signing
+ * sidecar). Used for development, the sandbox and self-hosted Node deployments;
+ * Cloudflare Workers use `cloudflare/r2ObjectStorage.ts` instead. Routes pick a
+ * driver through `createObjectStorageService()`.
+ */
+export class ObjectStorageService implements ObjectStorageBackend {
   constructor() {}
 
   getPublicObjectSearchPaths(): Array<string> {
@@ -109,6 +119,33 @@ export class ObjectStorageService {
     }
 
     return new Response(webStream, { headers });
+  }
+
+  async readObjectMetadata(
+    file: File,
+  ): Promise<{ size: number; contentType: string }> {
+    const [metadata] = await file.getMetadata();
+    return {
+      size: Number(metadata.size ?? 0),
+      contentType: String(metadata.contentType ?? 'application/octet-stream'),
+    };
+  }
+
+  async readObjectBytes(file: File): Promise<Buffer> {
+    const [buffer] = await file.download();
+    return buffer;
+  }
+
+  async writeObjectBytes(
+    file: File,
+    bytes: Buffer,
+    contentType: string,
+  ): Promise<void> {
+    await file.save(bytes, {
+      resumable: false,
+      contentType,
+      metadata: { contentType },
+    });
   }
 
   async getObjectEntityUploadURL(): Promise<string> {

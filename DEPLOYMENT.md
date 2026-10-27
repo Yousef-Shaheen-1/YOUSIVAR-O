@@ -6,6 +6,11 @@ The repository ships three runnable pieces: the **web application**
 deployed web application (see [`ANDROID_BUILD.md`](ANDROID_BUILD.md)), so it is
 deployed — and rolled back — together with the website.
 
+> **Deploying to Cloudflare?** [`CLOUDFLARE.md`](CLOUDFLARE.md) covers that
+> architecture (Pages + Workers + Hyperdrive + R2), every binding, secret and
+> dashboard setting, the deploy commands and the migration/rollback plan. This
+> file describes the Node/Replit deployment.
+
 > **There is no production URL for this project yet.** The website is currently
 > reachable only in the development environment. Everywhere below, "the deployed
 > origin" means the address you host it on; until one exists, an Android build
