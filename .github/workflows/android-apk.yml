@@ -15,7 +15,7 @@ on:
   workflow_dispatch:
     inputs:
       app_url:
-        description: 'Origin the Android shell loads (defaults to the YOUSIVAR_APP_URL repository variable)'
+        description: 'Origin the Android shell loads (defaults to the YOUSIVAR_APP_URL repository secret)'
         required: false
         type: string
       build_release:
@@ -39,7 +39,7 @@ concurrency:
   cancel-in-progress: ${{ !startsWith(github.ref, 'refs/tags/') }}
 
 env:
-  YOUSIVAR_APP_URL: ${{ inputs.app_url || vars.YOUSIVAR_APP_URL }}
+  YOUSIVAR_APP_URL: ${{ inputs.app_url || secrets.YOUSIVAR_APP_URL }}
 
 jobs:
   apk:
@@ -118,10 +118,10 @@ jobs:
             exit 0
           fi
           if [ "$RELEASE_BUILD" = "true" ]; then
-            echo "::error::No application URL is configured, so this release would ship a shell that cannot load the site. Set the YOUSIVAR_APP_URL repository variable (or pass the app_url input) and run again — see APK_RELEASE.md."
+            echo "::error::No application URL is configured, so this release would ship a shell that cannot load the site. Set the YOUSIVAR_APP_URL repository secret (or pass the app_url input) and run again — see APK_RELEASE.md."
             exit 1
           fi
-          echo "::warning::No YOUSIVAR_APP_URL is configured: this debug APK will show the bundled 'no application URL configured' screen. Set the YOUSIVAR_APP_URL repository variable to point it at the deployed site."
+          echo "::warning::No YOUSIVAR_APP_URL is configured: this debug APK will show the bundled 'no application URL configured' screen. Set the YOUSIVAR_APP_URL repository secret to point it at the deployed site."
 
       - name: Build, validate and checksum the debug APK
         working-directory: android
