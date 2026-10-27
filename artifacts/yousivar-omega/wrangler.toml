@@ -18,11 +18,8 @@ pages_build_output_dir = "./dist/public"
 compatibility_date = "2025-07-01"
 compatibility_flags = ["nodejs_compat"]
 
-[vars]
-VITE_CLERK_PUBLISHABLE_KEY = "sk_test_WMZ49bHKdDgSumvEG7YvxDcZ6VOEKhpgMNWcVFqZsy"
-VITE_CLERK_PROXY_URL = "/api/__clerk"
-VITE_API_BASE_URL = "/"
-API_PROXY_ORIGIN = "https://yousivar-omega-api.yousefshaheen818.workers.dev"
+# NOTE: Environment variables are NOT defined here. They are securely managed
+# in the Cloudflare Dashboard under Settings > Variables and secrets.
 
 # D1 Database Binding
 [[d1_databases]]
