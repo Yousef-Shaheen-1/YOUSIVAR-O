@@ -3,7 +3,6 @@ main = "src/index.js"
 compatibility_date = "2025-07-01"
 compatibility_flags = ["nodejs_compat"]
 
-[[d1_databases]]
-binding = "DB"
-database_name = "yousivar-omega-db"
-database_id = "64a3cc3c-5856-4317-bc49-6a7c362fde26"
+[[hyperdrive]]
+binding = "HYPERDRIVE"
+id = "1778142ef0224729883834c3a84cf808"
