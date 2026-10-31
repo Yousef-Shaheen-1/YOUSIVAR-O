@@ -12,16 +12,24 @@ export function isCloudflareWorker(): boolean {
 }
 
 export function applyCloudflareBindings(env: CloudflareWorkerEnv): void {
-  const hyperdrive = env.HYPERDRIVE;
-  if (typeof hyperdrive?.connectionString === "string") {
-    process.env.DATABASE_URL ??= hyperdrive.connectionString;
-  } else if (typeof env.DATABASE_URL === "string" && env.DATABASE_URL) {
-    process.env.DATABASE_URL ??= env.DATABASE_URL;
+  const connectionString = env.HYPERDRIVE?.connectionString;
+
+  if (
+    typeof connectionString !== "string" ||
+    connectionString.trim().length === 0
+  ) {
+    throw new Error(
+      "HYPERDRIVE binding is missing or has no connectionString."
+    );
   }
 
+  // Hyperdrive / Neon must take precedence over any stale DATABASE_URL.
+  process.env.DATABASE_URL = connectionString;
+
   if (env.OBJECT_STORAGE_DRIVER) {
-    process.env.OBJECT_STORAGE_DRIVER ??= env.OBJECT_STORAGE_DRIVER;
+    process.env.OBJECT_STORAGE_DRIVER = env.OBJECT_STORAGE_DRIVER;
   }
+
   applied = true;
 }
 
