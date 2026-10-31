@@ -1,10 +1,17 @@
 import express, { type Express } from "express";
 import helmet from "helmet";
-import pinoHttp from "pino-http";
 import { clerkMiddleware } from "@clerk/express";
 import { publishableKeyFromHost } from "@clerk/shared/keys";
 import router from "./routes";
 import { logger } from "./lib/logger";
+
+declare global {
+  namespace Express {
+    interface Request {
+      log: typeof logger;
+    }
+  }
+}
 import {
   CLERK_PROXY_PATH,
   clerkProxyMiddleware,
@@ -34,25 +41,28 @@ const previewOriginHosts =
 const app: Express = express();
 
 app.disable("x-powered-by");
-app.use(
-  pinoHttp({
-    logger,
-    serializers: {
-      req(req) {
-        return {
-          id: req.id,
-          method: req.method,
-          url: req.url?.split("?")[0],
-        };
+app.use((req, res, next) => {
+  const requestLogger = logger.child({
+    method: req.method,
+    url: req.originalUrl.split("?")[0],
+  });
+
+  req.log = requestLogger;
+
+  const startedAt = Date.now();
+
+  res.on("finish", () => {
+    requestLogger.info(
+      {
+        statusCode: res.statusCode,
+        responseTime: Date.now() - startedAt,
       },
-      res(res) {
-        return {
-          statusCode: res.statusCode,
-        };
-      },
-    },
-  }),
-);
+      "Request completed",
+    );
+  });
+
+  next();
+});
 app.use(helmet());
 app.use(CLERK_PROXY_PATH, clerkProxyMiddleware());
 app.use(
