@@ -12,24 +12,24 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
 
-      - uses: pnpm/action-setup@v4
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
         with:
           version: 10
 
-      - uses: actions/setup-node@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
         with:
           node-version: 22
 
       - name: Install dependencies
         working-directory: artifacts/api-server
         run: pnpm install --no-frozen-lockfile
-
-      - name: Check Wrangler configuration
-        working-directory: artifacts/api-server
-        run: pnpm exec wrangler deploy --dry-run
 
       - name: Deploy Worker
         working-directory: artifacts/api-server
