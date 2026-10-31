@@ -1,19 +1,39 @@
-name: Deploy Worker
+name: Deploy Full API Worker
+
 on:
+  workflow_dispatch:
   push:
     branches:
       - main
     paths:
-      - 'worker-api/**'
+      - 'artifacts/api-server/**'
+      - '.github/workflows/deploy-worker.yml'
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - name: Deploy to Cloudflare Workers
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        working-directory: artifacts/api-server
+        run: pnpm install --no-frozen-lockfile
+
+      - name: Deploy Worker
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          workingDirectory: 'worker-api'
+          workingDirectory: artifacts/api-server
           command: deploy

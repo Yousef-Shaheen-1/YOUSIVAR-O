@@ -18,7 +18,7 @@
       "binding": "HYPERDRIVE",
       // Replace with the id from `wrangler hyperdrive create yousivar-omega-db
       // --connection-string="postgres://user:password@host:5432/db"`.
-      "id": "REPLACE_WITH_HYPERDRIVE_ID"
+      "id": "1778142ef0224729883834c3a84cf808"
     }
   ],
   "r2_buckets": [
