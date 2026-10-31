@@ -110,7 +110,13 @@ app.use((req, res) => {
   res.status(404).json({ error: "Route not found" });
 });
 app.use((error: unknown, req: express.Request, res: express.Response, _next: express.NextFunction) => {
-  req.log.error({ err: error }, "Unhandled API error");
+  console.error("API_UNHANDLED_ERROR", {
+  name: error instanceof Error ? error.name : "UnknownError",
+  message: error instanceof Error ? error.message : String(error),
+  stack: error instanceof Error ? error.stack : undefined,
+  path: req.originalUrl,
+  method: req.method,
+});
   const candidate = error as { status?: number; statusCode?: number };
   const status = [400, 401, 403, 404, 409, 413, 429].includes(
     candidate.statusCode ?? candidate.status ?? 500,
