@@ -7,6 +7,10 @@ on:
       - main
     paths:
       - 'artifacts/api-server/**'
+      - 'lib/**'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+      - 'pnpm-workspace.yaml'
       - '.github/workflows/deploy-worker.yml'
 
 jobs:
@@ -20,16 +24,16 @@ jobs:
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
         with:
-          version: 10
+          version: 12.16.1
 
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: 22
+          cache: pnpm
 
-      - name: Install dependencies
-        working-directory: artifacts/api-server
-        run: pnpm install --no-frozen-lockfile
+      - name: Install workspace dependencies
+        run: pnpm install --frozen-lockfile
 
       - name: Deploy Worker
         working-directory: artifacts/api-server
